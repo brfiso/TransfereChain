@@ -9,6 +9,9 @@ broadcast = "broadcast"
 optimizer = true
 optimizer_runs = 500
 ffi = true
+remappings = [
+  '@openzeppelin/contracts/=lib/openzeppelin-contracts/lib/openzeppelin-contracts/contracts/',
+]
 
 [rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"
@@ -20,3 +23,4 @@ runs = 1000
 runs = 1000
 depth = 128
 fail_on_revert = false
+
