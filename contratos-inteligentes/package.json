@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "@openzeppelin/contracts": "5.0.0",
+    "slither": "^0.2.2"
+  },
+  "scripts": {
+    "lint": "npm lint:sol && npm prettier:check",
+    "lint:sol": "forge fmt --check && npm solhint \"{script,src,test}/**/*.sol\"",
+    "prettier:check": "prettier --check \"**/*.{json,md,svg,yml}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.0.0"
+  }
+}
