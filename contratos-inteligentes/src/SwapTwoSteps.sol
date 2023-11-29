@@ -110,7 +110,7 @@ contract SwapTwoSteps {
         RealTokenizado tokenReceiver,
         address receiver,
         uint256 amount
-    ) public {
+    ) internal {
         proposalCounter += 1;
         swapProposals[proposalCounter] = SwapProposal({
             tokenSender: tokenSender,
@@ -136,7 +136,7 @@ contract SwapTwoSteps {
      * @dev Aceita a proposta de swap, executável apenas pelo recebedor.
      * @param proposalId uint256: Id da proposta.
      */
-    function executeSwap(uint256 proposalId) public {
+    function executeSwap(uint256 proposalId) internal {
         SwapProposal storage proposal = swapProposals[proposalId];
         require(
             proposal.receiver == msg.sender,

@@ -46,9 +46,6 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
         address carteira;
         string nome;
         string municipio;
-        uint32 banco;
-        uint32 agencia;
-        uint32 conta;
         bool registroAtivo;
     }
 
@@ -65,7 +62,7 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
     mapping(address => Beneficiario) beneficiario;
     mapping(uint id => PedidoDeTransferencia) public pedidoDeTransferencia;
 
-    function RegistraParlamentar(uint id, address carteira, string memory nome) apenasAdmin external {
+    function registraParlamentar(uint id, address carteira, string memory nome) apenasAdmin external {
         parlamentar[carteira] = Parlamentar({
             id: id,
             carteira: carteira,
@@ -74,20 +71,17 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
         });
     }
 
-    function RegistraBeneficiario(uint id, address carteira, string memory nome, string memory municipio, uint32 banco, uint32 agencia, uint32 conta) apenasAdmin external {
+    function registraBeneficiario(uint id, address carteira, string memory nome, string memory municipio) apenasAdmin external {
         beneficiario[carteira] = Beneficiario({
             id: id,
             carteira: carteira,
             nome: nome,
             municipio: municipio,
-            banco: banco,
-            agencia: agencia,
-            conta: conta,
             registroAtivo: true
         });
     }
     // Função executada pelo deputado
-    function AprovaTransferencia(uint autorizacao, uint64 valor, string memory detalhesDoPedido, address tokenDoBanco, address carteiraDoBeneficiario) external {
+    function aprovaTransferencia(uint autorizacao, uint64 valor, string memory detalhesDoPedido, address tokenDoBanco, address carteiraDoBeneficiario) external {
         if (!parlamentar[msg.sender].registroAtivo || parlamentar[msg.sender].carteira != msg.sender) revert ApenasParlamentar(); 
         pedidoDeTransferencia[autorizacao] = PedidoDeTransferencia({
             id: proposalCounter + 1,
@@ -104,7 +98,7 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
 
     // Função executada pelo Recebedor
     // Falta verificar se registro está ativo
-    function ExecutaTransferencia(uint autorizacao) external {
+    function executaTransferencia(uint autorizacao) external {
         PedidoDeTransferencia storage pedido = pedidoDeTransferencia[autorizacao];
         if (beneficiario[msg.sender].carteira != msg.sender) revert ApenasBeneficiarioAtivo(); 
         if (pedido.estado == EstadoDaTransferencia.CANCELADA) revert TransferenciaCancelada();
@@ -122,19 +116,19 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
         }    
     }
 
-    function DetalhesBeneficiario(address carteira) external view returns (Beneficiario memory) {
+    function detalhesBeneficiario(address carteira) external view returns (Beneficiario memory) {
         return beneficiario[carteira];
     }
 
-    function DetalhesParlamentar(address carteira) external view returns (Parlamentar memory) {
+    function detalhesParlamentar(address carteira) external view returns (Parlamentar memory) {
         return parlamentar[carteira];
     }
 
-    function DetalhesTransferencia(uint id) external view returns (PedidoDeTransferencia memory) {
+    function detalhesTransferencia(uint id) external view returns (PedidoDeTransferencia memory) {
         return pedidoDeTransferencia[id];
     }
 
-    function DetalhesTodasTransferencias() external view returns (PedidoDeTransferencia[] memory) {
+    function detalhesTodasTransferencias() external view returns (PedidoDeTransferencia[] memory) {
         return todosPedidosDeTransferencia;
     }
 
