@@ -9,6 +9,7 @@ broadcast = "broadcast"
 optimizer = true
 optimizer_runs = 500
 ffi = true
+evm_version = 'shanghai'  
 
 [rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"
