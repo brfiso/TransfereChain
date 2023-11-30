@@ -19,7 +19,7 @@ contract DeployTransfereChain is Script {
         
         uint256 deployerPrivateKey = vm.envUint('PRIVATE_KEY');
         vm.startBroadcast(deployerPrivateKey);
-        TransfereChain transfereChain = new TransfereChain(contaDoTesouro);
+        TransfereChain transfereChain = new TransfereChain(contaDoTesouro, realDigital);
         vm.stopBroadcast();
         uint256 authorityKey = vm.envUint('AUTHORITY_KEY');
         vm.startBroadcast(authorityKey);

@@ -177,7 +177,7 @@ contract SwapTwoSteps {
      * @param proposalId uint256: Id da proposta
      * @param reason string: Razão do cancelamento
      */
-    function cancelSwap(uint256 proposalId, string memory reason) public {
+    function cancelSwap(uint256 proposalId, string memory reason) internal {
         SwapProposal storage proposal = swapProposals[proposalId];
         require(
             msg.sender == proposal.sender || msg.sender == proposal.receiver,

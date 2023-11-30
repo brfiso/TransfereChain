@@ -10,8 +10,10 @@ error ApenasBeneficiarioAtivo();
 error TransferenciaJaExecutada();
 error TransferenciaCancelada();
 error TempoDeCarencia();
+error BeneficiarioJaCadastrado();
+error ParlamentarJaCadastrado();
 
-contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA16901565af4d9Fa83)) {
+contract TransfereChain is SwapTwoSteps {
     RealTokenizado private realTokenizado;
     PedidoDeTransferencia[] private todosPedidosDeTransferencia;
 
@@ -22,7 +24,7 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
         _;
     }
 
-    constructor(RealTokenizado _realTokenizado) {
+    constructor(RealTokenizado _realTokenizado, RealDigital _realDigital) SwapTwoSteps(_realDigital) {
         admin = msg.sender;
         realTokenizado = _realTokenizado;
     }
@@ -53,25 +55,53 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
         uint id;
         uint64 valor;
         uint momentoDoPedido;
-        string detalhesDoPedido; 
+        string detalhesDoPedido;
+        uint parlamentar; 
         Beneficiario beneficiario;
         EstadoDaTransferencia estado;
     }
 
     mapping(address  => Parlamentar) parlamentar;
+    mapping(uint  => Parlamentar) parlamentarPorId;
     mapping(address => Beneficiario) beneficiario;
+    mapping(uint  => Beneficiario) beneficiarioPorId;
+
     mapping(uint id => PedidoDeTransferencia) public pedidoDeTransferencia;
 
     function registraParlamentar(uint id, address carteira, string memory nome) apenasAdmin external {
+        if (parlamentarPorId[id].id == id || parlamentar[carteira].carteira == carteira) revert ParlamentarJaCadastrado();
         parlamentar[carteira] = Parlamentar({
             id: id,
             carteira: carteira,
             nome: nome,
             registroAtivo: true
         });
+        parlamentarPorId[id] = parlamentar[carteira];
+    }
+
+    function inativaParlamentar(address carteira) apenasAdmin external {
+        if (parlamentar[carteira].carteira == carteira)
+        parlamentar[carteira].registroAtivo = false;
+        parlamentarPorId[parlamentar[carteira].id].registroAtivo = false;
+    }
+
+    function reativaParlamentar(address carteira) apenasAdmin external {
+        if (parlamentar[carteira].carteira == carteira)
+        parlamentar[carteira].registroAtivo = true;
+        parlamentarPorId[parlamentar[carteira].id].registroAtivo = true;
+    }
+
+    function mudaCarteiraParlamentar(address carteira) external {
+        if (parlamentar[msg.sender].carteira != msg.sender) revert ApenasParlamentar();
+        parlamentar[carteira] = parlamentar[msg.sender];
+        delete parlamentar[msg.sender];
+        parlamentar[carteira].carteira = carteira;
+        parlamentarPorId[parlamentar[carteira].id].carteira = carteira;
+
     }
 
     function registraBeneficiario(uint id, address carteira, string memory nome, string memory municipio) apenasAdmin external {
+        if (beneficiarioPorId[id].id == id || beneficiario[carteira].carteira == carteira) revert BeneficiarioJaCadastrado();
         beneficiario[carteira] = Beneficiario({
             id: id,
             carteira: carteira,
@@ -79,7 +109,35 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
             municipio: municipio,
             registroAtivo: true
         });
+        beneficiarioPorId[id] = beneficiario[carteira];
     }
+
+    function inativaBeneficiario(address carteira) apenasAdmin external {
+        if (beneficiario[carteira].carteira == carteira)
+        beneficiario[carteira].registroAtivo = false;
+        beneficiarioPorId[beneficiario[carteira].id].registroAtivo = false;
+    }
+
+    function reativaBeneficiario(address carteira) apenasAdmin external {
+        if (beneficiario[carteira].carteira == carteira)
+        beneficiario[carteira].registroAtivo = true;
+        beneficiarioPorId[beneficiario[carteira].id].registroAtivo = true;
+    }
+
+    function mudaCarteiraBeneficiario(address carteira) external {
+        if (beneficiario[msg.sender].carteira != msg.sender) revert ApenasBeneficiarioAtivo();
+        beneficiario[carteira] = beneficiario[msg.sender];
+        delete beneficiario[msg.sender];
+        beneficiario[carteira].carteira = carteira;
+        beneficiarioPorId[beneficiario[carteira].id].carteira = carteira;
+    }
+
+    function mudaNomeBeneficiario(string memory nome) external {
+        if (beneficiario[msg.sender].carteira != msg.sender) revert ApenasBeneficiarioAtivo();
+        beneficiario[msg.sender].nome = nome;
+        beneficiarioPorId[beneficiario[msg.sender].id].nome = nome;
+    }
+
     // Função executada pelo deputado
     function aprovaTransferencia(uint autorizacao, uint64 valor, string memory detalhesDoPedido, address tokenDoBanco, address carteiraDoBeneficiario) external {
         if (!parlamentar[msg.sender].registroAtivo || parlamentar[msg.sender].carteira != msg.sender) revert ApenasParlamentar(); 
@@ -88,6 +146,7 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
             valor: valor,
             momentoDoPedido: block.timestamp,
             detalhesDoPedido: detalhesDoPedido,
+            parlamentar: parlamentar[msg.sender].id,
             beneficiario: beneficiario[carteiraDoBeneficiario],
             estado: EstadoDaTransferencia.PRIMEIRAPARCELA
         });
@@ -97,10 +156,9 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
     }
 
     // Função executada pelo Recebedor
-    // Falta verificar se registro está ativo
     function executaTransferencia(uint autorizacao) external {
         PedidoDeTransferencia storage pedido = pedidoDeTransferencia[autorizacao];
-        if (beneficiario[msg.sender].carteira != msg.sender) revert ApenasBeneficiarioAtivo(); 
+        if (!beneficiario[msg.sender].registroAtivo || beneficiario[msg.sender].carteira != msg.sender) revert ApenasBeneficiarioAtivo(); 
         if (pedido.estado == EstadoDaTransferencia.CANCELADA) revert TransferenciaCancelada();
         if (pedido.estado == EstadoDaTransferencia.EXECUTADA) revert TransferenciaJaExecutada();
         if (pedido.estado == EstadoDaTransferencia.SEGUNDAPARCELA && pedido.momentoDoPedido + 30 days > block.timestamp) revert TempoDeCarencia();
@@ -111,17 +169,37 @@ contract TransfereChain is SwapTwoSteps(RealDigital(0x740bc1AFEfc3EF4BBA06aCA169
         if (pedido.estado == EstadoDaTransferencia.PRIMEIRAPARCELA) {
             pedido.estado = EstadoDaTransferencia.SEGUNDAPARCELA;
             executeSwap(pedido.id);
-            // RealTokenizado(0x65A711ae4B00b49A25528FE4883054080BC80F6D).mint(msg.sender, pedido.valor);
-
         }    
+        todosPedidosDeTransferencia[pedido.id - 1].estado = pedido.estado;
+    }
+
+    // Só pode ser chamada pelo pagador ou pelo recebedor
+    function cancelaTransferencia(uint autorizacao, string memory motivo) external {
+        PedidoDeTransferencia storage pedido = pedidoDeTransferencia[autorizacao];
+        if (pedido.estado == EstadoDaTransferencia.SEGUNDAPARCELA 
+        || pedido.estado == EstadoDaTransferencia.PRIMEIRAPARCELA) {
+            cancelSwap(pedido.id + 1, motivo);
+            pedido.estado = EstadoDaTransferencia.CANCELADA;
+        }  
+        if (pedido.estado == EstadoDaTransferencia.PRIMEIRAPARCELA) {
+            cancelSwap(pedido.id, motivo);
+        }
     }
 
     function detalhesBeneficiario(address carteira) external view returns (Beneficiario memory) {
         return beneficiario[carteira];
     }
 
+    function detalhesBeneficiarioPorId(uint id) external view returns (Beneficiario memory) {
+        return beneficiarioPorId[id];
+    }
+
     function detalhesParlamentar(address carteira) external view returns (Parlamentar memory) {
         return parlamentar[carteira];
+    }
+
+    function detalhesParlamentarPorId(uint id) external view returns (Parlamentar memory) {
+        return parlamentarPorId[id];
     }
 
     function detalhesTransferencia(uint id) external view returns (PedidoDeTransferencia memory) {
