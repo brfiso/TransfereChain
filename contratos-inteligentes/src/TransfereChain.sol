@@ -79,7 +79,7 @@ contract TransfereChain is SwapTwoSteps {
     mapping(uint  => Parlamentar) parlamentarPorId;
     mapping(address => Beneficiario) beneficiario;
     mapping(uint  => Beneficiario) beneficiarioPorId;
-
+    mapping(uint => uint) public periodoDeCarencia; // Período em dias entre o pedido e o saque da 2ª parcela
     mapping(uint id => PedidoDeTransferencia) public pedidoDeTransferencia;
 
     function registraParlamentar(uint id, address carteira, string memory nome) apenasAdmin external {
@@ -162,7 +162,9 @@ contract TransfereChain is SwapTwoSteps {
         uint autorizacao, 
         uint64 valor, 
         address tokenDoBanco, 
-        address carteiraDoBeneficiario) 
+        address carteiraDoBeneficiario,
+        uint tempoDeCarencia
+        ) 
         apenasParlamentar
         external {
         pedidoDeTransferencia[autorizacao] = PedidoDeTransferencia({
@@ -177,6 +179,7 @@ contract TransfereChain is SwapTwoSteps {
         startSwap(realTokenizado, RealTokenizado(tokenDoBanco), carteiraDoBeneficiario, valor/2);
         startSwap(realTokenizado, RealTokenizado(tokenDoBanco), carteiraDoBeneficiario, valor/2);
         todosPedidosDeTransferencia.push(pedidoDeTransferencia[autorizacao]);
+        periodoDeCarencia[autorizacao] = tempoDeCarencia;
     }
 
     // Função executada pelo Recebedor
@@ -184,7 +187,9 @@ contract TransfereChain is SwapTwoSteps {
         PedidoDeTransferencia storage pedido = pedidoDeTransferencia[autorizacao];
         if (pedido.estado == EstadoDaTransferencia.CANCELADA) revert TransferenciaCancelada();
         if (pedido.estado == EstadoDaTransferencia.EXECUTADA) revert TransferenciaJaExecutada();
-        if (pedido.estado == EstadoDaTransferencia.SEGUNDAPARCELA && pedido.momentoDoPedido + 30 days > block.timestamp) revert TempoDeCarencia();
+        if (pedido.estado == EstadoDaTransferencia.SEGUNDAPARCELA 
+        && pedido.momentoDoPedido + periodoDeCarencia[autorizacao] * 1 days > block.timestamp) 
+        revert TempoDeCarencia();
         if (pedido.estado == EstadoDaTransferencia.SEGUNDAPARCELA) {
             pedido.estado = EstadoDaTransferencia.EXECUTADA;
             executeSwap(pedido.id + 1);
