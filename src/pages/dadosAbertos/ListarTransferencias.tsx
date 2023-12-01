@@ -1,27 +1,25 @@
-import { ModeToggle } from "@/components/mode-toggle";
 import { DataTable } from "@/utils/data-tables/ListarTransferencias/data-table";
 import { columns } from "@/utils/data-tables/ListarTransferencias/columns"
-import { Button } from "@/components/ui/button";
 import { mockTransferenciasEspeciais } from "@/utils/data/transferenciasEspeciais";
-
-import { SignOut } from "@phosphor-icons/react";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { ufs } from "@/utils/data/ufs";
+import { AuthContext } from "@/contexts/AuthContext";
+import { NavBar } from "@/components/NavBar";
 
 const data = mockTransferenciasEspeciais
 
 export function ListarTransferencias(){
-    const navigate = useNavigate()
     const [ufSelecionada, setUfSelecionada] = useState("");
 
     const handleComboChange = (value:string) => {
         setUfSelecionada(value);
     };
+
+    const { user } = useContext(AuthContext)
     return(
         <>
-        <div className="h-[100vh] flex items-center">
-            <div className="container space-y-20">
+            <NavBar nomeUsuario={user?.nome} />
+            <div className="container space-y-20 mb-20">
                 <h1 className="text-blue-600 text-2xl font-bold">Painel das Transferências Especiais</h1>
                 <div>
                     <div className="flex flex-col space-y-2">
@@ -32,14 +30,7 @@ export function ListarTransferencias(){
                 <div className="mx-auto">
                     <DataTable columns={columns} data={data} onComboChange={handleComboChange} />
                 </div>
-                <div className="absolute right-10 bottom-10">
-                    <div className="flex flex-col space-y-3">
-                        <ModeToggle/>
-                        <Button className="p-0" onClick={() => navigate("/")}><SignOut size={20} weight="bold" /></Button>
-                    </div>
-                </div>
             </div>
-        </div>
         </>     
     )
 }

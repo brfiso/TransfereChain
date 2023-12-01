@@ -1,6 +1,4 @@
-import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
-import { SignOut } from "@phosphor-icons/react";
 import { useNavigate, useParams } from "react-router-dom";
 import { columns } from "@/utils/data-tables/DetalharProgramas/columns"
 import { DataTable } from "@/utils/data-tables/DetalharProgramas/data-table"
@@ -16,9 +14,11 @@ import {
     DialogHeader,
     DialogTitle,
   } from "@/components/ui/dialog"
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Separator } from "@/components/ui/separator";
+import { NavBar } from "@/components/NavBar";
+import { AuthContext } from "@/contexts/AuthContext";
+import { ConnectWallet } from "@thirdweb-dev/react";
 
 export function DetalharProgramas(){
     const navigate = useNavigate()
@@ -29,10 +29,12 @@ export function DetalharProgramas(){
 
     const data = mockProgramas.filter(programa => programa.id === id)[0]
     const [modalOpen, setModalOpen] = useState(false)
+    const { user } = useContext(AuthContext)
+    
     return(
         <>
-            <div className="h-[100vh] flex items-center">
-                <div className="container space-y-20">
+            <NavBar nomeUsuario={user?.nome} />
+                <div className="container space-y-20 mb-20">
                     <div className="flex flex-col">
                         <h1 className="text-blue-600 text-2xl font-bold">Dados do Programas</h1>
                         <span className="">Permite manuntenção de programas na plataforma transfereGov</span> 
@@ -109,70 +111,9 @@ export function DetalharProgramas(){
                                     </DialogHeader>
                                     <div></div>
                                     <Separator/>
-                                    <div>
+                                    <div className="flex flex-col">
                                         <span className="text-lg font-semibold">Dados da carteira</span>
-                                        <ConnectButton.Custom>
-                                        {({
-                                            account,
-                                            chain,
-                                            openAccountModal,
-                                            openChainModal,
-                                            openConnectModal,
-                                            authenticationStatus,
-                                            mounted,
-                                        }) => {
-                                            const ready = mounted && authenticationStatus !== 'loading';
-                                            const connected =
-                                            ready &&
-                                            account &&
-                                            chain &&
-                                            (!authenticationStatus ||
-                                                authenticationStatus === 'authenticated');
-
-                                            return (
-                                            <div
-                                                {...(!ready && {
-                                                'aria-hidden': true,
-                                                'style': {
-                                                    opacity: 0,
-                                                    pointerEvents: 'none',
-                                                    userSelect: 'none',
-                                                },
-                                                })}
-                                            >
-                                                {(() => {
-                                                if (!connected) {
-                                                    return (
-                                                    <Button onClick={() => {setModalOpen(false); openConnectModal();}} type="button">
-                                                        Conectar Carteira
-                                                    </Button>
-                                                    );
-                                                }
-
-                                                if (chain.unsupported) {
-                                                    return (
-                                                    <Button onClick={() => {setModalOpen(false); openChainModal();}} type="button">
-                                                        Network Errada
-                                                    </Button>
-                                                    );
-                                                }
-
-                                                return (
-                                                    <div style={{ display: 'flex', gap: 12}}>
-
-                                                    <Button onClick={() => {setModalOpen(false); openAccountModal();}} type="button">
-                                                        {account.displayName}
-                                                        {account.displayBalance
-                                                        ? ` (${account.displayBalance})`
-                                                        : ''}
-                                                    </Button>
-                                                    </div>
-                                                );
-                                                })()}
-                                            </div>
-                                            );
-                                        }}
-                                        </ConnectButton.Custom>
+                                        <ConnectWallet btnTitle="Conectar a carteira" style={{color: "hsl(var(--foreground))", background: "hsl(var(--secondary))"}}/>
                                     </div>
                                     <div className="flex justify-end items-center space-x-5">
                                         <Button className={buttonVariants({ variant: "secondary", size:"lg" })} onClick={() => setModalOpen(false)} >Voltar</Button>
@@ -182,14 +123,7 @@ export function DetalharProgramas(){
                                 </Dialog>
                         </TabsContent>
                     </Tabs>
-                    <div className="absolute right-10 bottom-10">
-                        <div className="flex flex-col space-y-3">
-                            <ModeToggle/>
-                            <Button className="p-0" onClick={() => navigate("/")}><SignOut size={20} weight="bold"/></Button>
-                        </div>
-                    </div>
                 </div>
-            </div>
         </>  
     )
 }

@@ -1,53 +1,27 @@
 import { BrowserRouter } from 'react-router-dom'
 import { Router } from './Router'
 import { ThemeProvider } from './components/theme-provider'
-
-import '@rainbow-me/rainbowkit/styles.css';
-
-import {
-  getDefaultWallets,
-  RainbowKitProvider,
-} from '@rainbow-me/rainbowkit';
-import { configureChains, createConfig, WagmiConfig } from 'wagmi';
-import {
-  mainnet,
-  polygon,
-  optimism,
-  arbitrum,
-  base,
-  zora,
-} from 'wagmi/chains';
-import { alchemyProvider } from 'wagmi/providers/alchemy';
-import { publicProvider } from 'wagmi/providers/public';
+import { ThirdwebProvider, metamaskWallet } from "@thirdweb-dev/react";
+import { Sepolia } from "@thirdweb-dev/chains";
+import { AuthProvider } from "@/contexts/AuthContext"
 
 export function App() {
-  const { chains, publicClient } = configureChains(
-    [mainnet, polygon, optimism, arbitrum, base, zora],
-    [
-      alchemyProvider({ apiKey: import.meta.env.VITE_ALCHEMY_ID }),
-      publicProvider()
-    ]
-  );
-  const { connectors } = getDefaultWallets({
-    appName: 'Tesouro em Bytes',
-    projectId: import.meta.env.VITE_PROJECT_ID,
-    chains
-  });
-  const wagmiConfig = createConfig({
-    autoConnect: true,
-    connectors,
-    publicClient
-  })
-
   return (
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
-      <WagmiConfig config={wagmiConfig}>
-        <RainbowKitProvider locale='pt-BR' chains={chains} modalSize='compact'>
-          <BrowserRouter>
-            <Router/>
-          </BrowserRouter>
-        </RainbowKitProvider>
-      </WagmiConfig>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <ThirdwebProvider 
+          supportedWallets={[metamaskWallet()]} 
+          activeChain={Sepolia} 
+          clientId= {import.meta.env.VITE_PUBLIC_THIRDWEB_CLIENT_ID}
+          authConfig={{
+            domain: "http://localhost:3333",           
+          }}
+          >
+            <BrowserRouter>
+                <Router/>
+            </BrowserRouter>
+        </ThirdwebProvider>
+      </ThemeProvider>
+    </AuthProvider>
   )
 }

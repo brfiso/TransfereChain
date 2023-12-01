@@ -1,7 +1,7 @@
 import imgGoverno from "@/assets/governoImg.png"
 
 import { ModeToggle } from "@/components/mode-toggle";
-import { IdentificationCard, Bank, QrCode, Certificate, CloudArrowUp } from "@phosphor-icons/react";
+import { IdentificationCard, Bank, QrCode, Certificate, CloudArrowUp, Wallet } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input"
 import * as z from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -16,60 +16,91 @@ import {
     FormMessage,
   } from "@/components/ui/form"
 import { Separator } from "@/components/ui/separator";
-import { useNavigate } from "react-router-dom";
-import type {MaskitoOptions} from '@maskito/core';
-import {useMaskito} from '@maskito/react';
-import { usuarios } from "@/utils/data/usuarios";
-
+import type { MaskitoOptions } from '@maskito/core';
+import { useMaskito } from '@maskito/react';
+import { AuthContext } from '@/contexts/AuthContext'
+import { useContext } from "react";
+import initializeFirebaseClient from "@/lib/initFirebase";
+import { useAuth } from "@thirdweb-dev/react";
+import { signInWithCustomToken } from "firebase/auth";
+import { doc, serverTimestamp } from "@firebase/firestore";
+import { getDoc, setDoc } from "firebase/firestore";
 
 export function Login(){
-    const navigate = useNavigate();
     const formSchema = z.object({
         cpf: z.string().length(14, {
             message: "O CPF é inválido."
         }),
+        password: z.string(),
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             cpf: "",
+            password: "",
         },
     })
-    
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        const data = usuarios
-
-        const usuarioEncontrado = data.find(usuario => usuario.id === values.cpf);
-
-        if (usuarioEncontrado) {
-            if (usuarioEncontrado.role === "parlamentar") {
-                navigate("/emendas/listar");
-            } else if (usuarioEncontrado.role === "beneficiario") {
-                navigate("/programas/listar");
-            } else {
-                navigate("/transferenciasEspeciais/listar");
-            }
-        } else {
-            form.setError("cpf", {
-                type: "manual",
-                message: "Usuário não encontrado.",
-            });
-        }   
-    }
 
     const cpfMask: MaskitoOptions = {
         mask: [/\d/,/\d/,/\d/,".",/\d/,/\d/,/\d/,".",/\d/,/\d/,/\d/,"-",/\d/,/\d/]
     };
     const cpfRef = useMaskito({options: cpfMask});
+
+
+    const { signIn } = useContext(AuthContext)
+
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+
+      await signIn(values)
+
+    }
+
+    const thirdwebAuth = useAuth();
+    const { auth, db } = initializeFirebaseClient();
     
+    async function signInWallet() {
+        // Use the same address as the one specified in _app.tsx.
+        const payload = await thirdwebAuth?.login();
+
+        try {
+            // Make a request to the API with the payload.
+            const res = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ payload }),
+            });
+
+            // Get the returned JWT token to use it to sign in with
+            const { token } = await res.json();
+
+            // Sign in with the token.
+            const userCredential = await signInWithCustomToken(auth, token);
+            // On success, we have access to the user object.
+            const user = userCredential.user;
+
+            // If this is a new user, we create a new document in the database.
+            const usersRef = doc(db, "users", user.uid!);
+            const userDoc = await getDoc(usersRef);
+
+            if (!userDoc.exists()) {
+            // User now has permission to update their own document outlined in the Firestore rules.
+            setDoc(usersRef, { createdAt: serverTimestamp() }, { merge: true });
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
     return(
         <>
             <div className="flex h-[100vh] items-center justify-center">
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 max-h-[700px]">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 max-h-[800px]">
                     <div></div>
                     <img className="hidden max-h-[500px] lg:col-span-2 lg:block" src={imgGoverno} />
-                    <div className="max-h-[700px]">
+                    <div className="max-h-[800px]">
                         <div className="border h-full p-5">
                             <span className="font-bold">Identifique-se no gov.br com:</span>
                             <div className="flex items-center my-5">
@@ -85,18 +116,32 @@ export function Login(){
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>CPF</FormLabel>
-                                                    <FormControl>
-                                                        <Input 
-                                                            type="text" 
-                                                            placeholder="Digite seu CPF" 
-                                                            maxLength={14}
-                                                            {...field}
-                                                            ref={cpfRef}
-                                                            onInput={(evt) => {
-                                                                form.setValue("cpf", evt.currentTarget.value);
-                                                            }}
+                                                <FormControl>
+                                                    <Input 
+                                                        placeholder="Digite seu CPF" 
+                                                        {...field}
+                                                        ref={cpfRef}
+                                                        onInput={(evt) => {
+                                                            form.setValue("cpf", evt.currentTarget.value);}}
                                                         />
-                                                    </FormControl>
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Senha</FormLabel>
+                                                <FormControl>
+                                                    <Input 
+                                                        placeholder="Digite sua senha" 
+                                                        type="password"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -106,6 +151,10 @@ export function Login(){
                             </Form>
                             <span className="font-bold"> Outras opções de identificação:</span>
                             <Separator className="mt-1"/>
+                            <div className="flex items-center mt-5">
+                                <Wallet size={26}/>
+                                <button className="ml-1" onClick={() => signInWallet()}>Entrar com sua carteira</button>
+                            </div>
                             <div className="flex items-center mt-5">
                                 <Bank size={26}/>
                                 <span className="ml-2">Login com seu banco</span>
