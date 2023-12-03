@@ -13,9 +13,6 @@ export function App() {
           supportedWallets={[metamaskWallet()]} 
           activeChain={Sepolia} 
           clientId= {import.meta.env.VITE_PUBLIC_THIRDWEB_CLIENT_ID}
-          authConfig={{
-            domain: "http://localhost:3333",           
-          }}
           >
             <BrowserRouter>
                 <Router/>

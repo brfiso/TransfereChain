@@ -34,8 +34,6 @@
     "clsx": "^2.0.0",
     "cmdk": "^0.2.0",
     "ethers": "^5.7.2",
-    "firebase": "^10.7.0",
-    "firebase-admin": "^11.11.1",
     "localforage": "^1.10.0",
     "lucide-react": "^0.293.0",
     "match-sorter": "^6.3.1",

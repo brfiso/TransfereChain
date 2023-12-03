@@ -1,7 +1,6 @@
 import { NavBar } from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
 import { AuthContext } from "@/contexts/AuthContext"
-import { usuarios } from "@/utils/data/usuarios"
 import { useContext } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -24,40 +23,92 @@ import { Check } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 import React from "react"
 import { ChevronsUpDown } from "lucide-react"
+import { ConnectWallet, useAddress, useContract } from "@thirdweb-dev/react" 
+import { api } from "@/services/api";
+import { useNavigate } from "react-router-dom"
+import { abi, contractAddress } from "@/utils/contrato"
+import { MaskitoOptions } from "@maskito/core"
+import { useMaskito } from "@maskito/react"
 
 export function Criar() {
-    const data = usuarios
+    async function getUsuarios(){
+        const response = await api.get("users");
+        return response
+    }
+
     const { user } = useContext(AuthContext)
+    const userWallet = useAddress()
+    const {contract} = useContract(contractAddress, abi)
 
     const formSchema = z.object({
         nome: z.string(),
-        cpf: z.string(),
-        role: z.string(),
-        cnpj: z.string(),
+        cpf: z.string({
+            required_error: "CPF é obrigatório"
+        }).length(14, {
+            message: "CPF incorreto"
+        }),
+        role: z.string({
+            required_error: "Cargo é obrigatório"
+        }),
+        cnpj: z.string().max(17, {
+            message: "CNPJ incorreto"
+        }),
+		wallet: z.string(),
+		password: z.string({
+            required_error: "Senha é obrigatória"
+        }),
       })
 
-    // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             nome: "",
             cpf: "",
             role: "",
-            cnpj:""
+            cnpj:"",
+			wallet: "",
+			password: "",
         },
     })
-    
-    // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
-    }
+
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+		try{
+            let cpf = values.cpf
+            let wallet = values.wallet
+            let nome = values.nome
+            let cnpj = values.cnpj
+            let role = values.role
+            let password = values.password
+
+			await api.post("registerUser", {
+                cpf, wallet, nome, cnpj, role, password
+            });
+
+            const usuarios = await getUsuarios()
+
+            await contract.registraParlamentar(usuarios.data.length + 1, values.nome, values.wallet)   
+
+            window.alert(`Sucesso: Usuário registrado com sucesso`);
+
+		}catch(err: any){
+            window.alert(`Error: ${err.response.data.message}`);
+		}
+	}
 
     const [openRoles, setOpenRoles] = React.useState(false)
     const [valueRoles, setValueRoles] = React.useState("")
     const roles = ["Nenhum","Beneficiário","Administrador","Parlamentar"]
+    const navigate = useNavigate()
 
+    const cpfMask: MaskitoOptions = {
+        mask: [/\d/,/\d/,/\d/,".",/\d/,/\d/,/\d/,".",/\d/,/\d/,/\d/,"-",/\d/,/\d/]
+    };
+    const cpfRef = useMaskito({options: cpfMask});
+
+    const cnpjMask: MaskitoOptions = {
+        mask: [/\d/,/\d/,".",/\d/,/\d/,/\d/,".",/\d/,/\d/,/\d/,"/",/\d/,/\d/,/\d/,/\d/,"-",/\d/,/\d/]
+    };
+    const cnpjRef = useMaskito({options: cnpjMask});
 
     return(
         <>
@@ -68,7 +119,7 @@ export function Criar() {
                         <h1 className="text-blue-600 text-2xl font-bold">Novo Usuário</h1>
                         <span className="">Crie usuários ou emendas para aplicação</span> 
                     </div>
-                    <Button variant="outline">Voltar</Button>
+                    <Button variant="outline" onClick={() => navigate("/admin/dashboard")} >Voltar</Button>
                 </div>
                 <div>
                 <Tabs defaultValue="usuarios" className="w-full">
@@ -99,7 +150,37 @@ export function Criar() {
                                             <FormItem>
                                                 <FormLabel>CPF</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="CPF" {...field} />
+                                                    <Input placeholder="CPF" {...field} 
+                                                        ref={cpfRef}
+                                                        onInput={(evt) => {
+                                                            form.setValue("cpf", evt.currentTarget.value);}}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+									<FormField
+                                        control={form.control}
+                                        name="wallet"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Endereço da carteira do usuário</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="0xasecdef..." {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Senha para primeiro acesso</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="Senha para primeiro acesso" type="password" {...field} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -171,14 +252,32 @@ export function Criar() {
                                             <FormItem>
                                                 <FormLabel>CNPJ Relacionado</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="CNPJ relacionado" disabled={valueRoles.toLowerCase() !== "beneficiário"} {...field} />
+                                                    <Input 
+                                                        placeholder="CNPJ relacionado"
+                                                        {...field}
+                                                        ref={cnpjRef}
+                                                        onInput={(evt) => {
+                                                            form.setValue("cnpj", evt.currentTarget.value);}}
+                                                     />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
                                     }
-                                    <Button type="submit">Criar usuário</Button>
+                                    <div>
+                                        {
+                                            userWallet ?
+                                                <Button type="submit">Criar usuário</Button>
+                                                :
+                                                <ConnectWallet btnTitle="conectar a carteira" style={{
+                                                    padding: 10,
+                                                    borderRadius: 3,
+                                                    backgroundColor: "hsl(var(--primary) / 0.9)",
+                                                    color: "hsl(var(--primary-foreground))"
+                                                }} />
+                                        }
+                                    </div>
                                 </form>
                             </Form>
                         </TabsContent>

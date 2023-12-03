@@ -34,7 +34,7 @@ api.interceptors.response.use(response => {
                     refreshToken,
                 }).then( response => {
                     const {token} = response.data;
-    
+
                     setCookie(undefined, "tesouroBtAuth.token", token, {
                         maxAge: 60 * 60 * 24 * 30,
                         path: "/"

@@ -20,13 +20,27 @@ import type { MaskitoOptions } from '@maskito/core';
 import { useMaskito } from '@maskito/react';
 import { AuthContext } from '@/contexts/AuthContext'
 import { useContext } from "react";
-import initializeFirebaseClient from "@/lib/initFirebase";
-import { useAuth } from "@thirdweb-dev/react";
-import { signInWithCustomToken } from "firebase/auth";
-import { doc, serverTimestamp } from "@firebase/firestore";
-import { getDoc, setDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+
 
 export function Login(){
+    const { signIn, isAuthenticated } = useContext(AuthContext)
+    const navigate = useNavigate()
+
+    if(isAuthenticated){
+        const { user } = useContext(AuthContext)
+
+        if(user?.role === "administrador") {
+            navigate("/admin/dashboard");
+          } else if(user?.role === "parlamentar") {
+            navigate("/emendas/listar");
+          } else if(user?.role === "beneficiario") {
+            navigate("/programas/listar");
+          } else {
+            navigate("/transferenciasEspeciais/listar");
+          }
+    }
+    
     const formSchema = z.object({
         cpf: z.string().length(14, {
             message: "O CPF é inválido."
@@ -48,50 +62,11 @@ export function Login(){
     const cpfRef = useMaskito({options: cpfMask});
 
 
-    const { signIn } = useContext(AuthContext)
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
 
       await signIn(values)
 
-    }
-
-    const thirdwebAuth = useAuth();
-    const { auth, db } = initializeFirebaseClient();
-    
-    async function signInWallet() {
-        // Use the same address as the one specified in _app.tsx.
-        const payload = await thirdwebAuth?.login();
-
-        try {
-            // Make a request to the API with the payload.
-            const res = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ payload }),
-            });
-
-            // Get the returned JWT token to use it to sign in with
-            const { token } = await res.json();
-
-            // Sign in with the token.
-            const userCredential = await signInWithCustomToken(auth, token);
-            // On success, we have access to the user object.
-            const user = userCredential.user;
-
-            // If this is a new user, we create a new document in the database.
-            const usersRef = doc(db, "users", user.uid!);
-            const userDoc = await getDoc(usersRef);
-
-            if (!userDoc.exists()) {
-            // User now has permission to update their own document outlined in the Firestore rules.
-            setDoc(usersRef, { createdAt: serverTimestamp() }, { merge: true });
-            }
-        } catch (error) {
-            console.error(error);
-        }
     }
 
     return(
@@ -153,7 +128,7 @@ export function Login(){
                             <Separator className="mt-1"/>
                             <div className="flex items-center mt-5">
                                 <Wallet size={26}/>
-                                <button className="ml-1" onClick={() => signInWallet()}>Entrar com sua carteira</button>
+                                <button className="ml-1" onClick={() => {}}>Entrar com sua carteira</button>
                             </div>
                             <div className="flex items-center mt-5">
                                 <Bank size={26}/>

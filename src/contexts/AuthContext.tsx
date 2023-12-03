@@ -6,7 +6,8 @@ import axios from "axios";
 type User = {
   cpf: string
   nome: string
-  roles: string[]
+  role: string
+  wallet: string
 }
 
 type SignInCredentials = {
@@ -18,7 +19,7 @@ type AuthContextData = {
   signIn(credentials: SignInCredentials): Promise<void>;
   user: User | undefined
   isAuthenticated: boolean
-  navigateTo: (path: string) => void; // Adicionando a função navigateTo
+  navigateTo: (path: string) => void;
 }
 
 type AuthProviderProps = {
@@ -36,23 +37,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if(token) {
       api.get('/me').then(response => {
-        const {cpf, nome, roles} = response.data
+        const {cpf, nome, role, wallet} = response.data
 
-        setUser({cpf, nome, roles})
-      }).catch(_ =>{
-          signOut()
+        setUser({cpf, nome, role, wallet})
+      }).catch( _ =>{
+        signOut()
       })
     }
   }, [])
 
   async function signIn({ cpf, password }: SignInCredentials): Promise<void> {
     try {
-      const response = await api.post("sessions", {
+      const response = await api.post("Sessions", {
         cpf,
         password
       });
 
-      const { token, refreshToken, roles, nome } = response.data;
+      const { token, refreshToken, role, nome, wallet } = response.data;
 
       setCookie(undefined, "tesouroBtAuth.token", token, {
         maxAge: 60 * 60 * 24 * 30,
@@ -67,17 +68,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser({
         cpf,
         nome,
-        roles
+        role,
+        wallet
       });
 
-      const authenticatedApi = axios.create({
+      axios.create({
         baseURL: "http://localhost:3333",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      navigateTo("/programas/listar");
+      if(response.data?.role === "administrador") {
+        navigateTo("/admin/dashboard");
+      } else if(response.data.role === "parlamentar") {
+        navigateTo("/emendas/listar");
+      } else if(response.data.role === "beneficiario") {
+        navigateTo("/programas/listar");
+      } else {
+        navigateTo("/transferenciasEspeciais/listar");
+      }
+  
 
     } catch (err) {
       console.log(err);
