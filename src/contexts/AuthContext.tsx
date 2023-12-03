@@ -17,6 +17,7 @@ type SignInCredentials = {
 
 type AuthContextData = {
   signIn(credentials: SignInCredentials): Promise<void>;
+  userAccess(role: string): void;
   user: User | undefined
   isAuthenticated: boolean
   navigateTo: (path: string) => void;
@@ -95,12 +96,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  async function userAccess(role: string){
+    const { user, isAuthenticated } = useContext(AuthContext)
+
+    if(!isAuthenticated){
+        return navigateTo("/")
+    }
+
+    if(user?.role != role){
+      return navigateTo("/")
+    }
+  }
+
   const navigateTo = (path: string) => {
     window.location.href = path; 
   };
 
   return (
-    <AuthContext.Provider value={{ signIn, isAuthenticated, user, navigateTo }}>
+    <AuthContext.Provider value={{ signIn, userAccess, isAuthenticated, user, navigateTo }}>
       {children}
     </AuthContext.Provider>
   );

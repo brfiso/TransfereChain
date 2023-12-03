@@ -75,7 +75,9 @@ export function DetalharMinhasEmendas(){
 
     const [openTipo, setOpenTipo] = useState(false)
     const [valueTipo, setValueTipo] = useState("")
-    const { user } = useContext(AuthContext)
+    const { user, userAccess } = useContext(AuthContext)
+
+    userAccess("beneficiario")
 
     return(
         <>

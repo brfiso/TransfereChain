@@ -9,7 +9,8 @@ import { AuthContext } from "@/contexts/AuthContext";
 export function ListarEmendas(){
     const data = mockEmendas
 
-    const { user } = useContext(AuthContext)
+    const { user, userAccess } = useContext(AuthContext)
+    userAccess("parlamentar")
     return(
         <>
             <NavBar nomeUsuario={user?.nome} />

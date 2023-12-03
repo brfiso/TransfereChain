@@ -36,9 +36,13 @@ export function Criar() {
         return response
     }
 
-    const { user } = useContext(AuthContext)
+    
+
+    const { user, userAccess } = useContext(AuthContext)
     const userWallet = useAddress()
     const {contract} = useContract(contractAddress, abi)
+
+    userAccess("administrador")
 
     const formSchema = z.object({
         nome: z.string(),

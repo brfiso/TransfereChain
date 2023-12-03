@@ -15,7 +15,8 @@ export function DetalharEmendas(){
     const { id } = useParams();
     const data = mockEmendas.filter(emenda => emenda.id === id)[0]
 
-    const { user } = useContext(AuthContext)
+    const { user, userAccess } = useContext(AuthContext)
+    userAccess("parlamentar")
     return(
         <>
             <NavBar nomeUsuario={user?.nome} />

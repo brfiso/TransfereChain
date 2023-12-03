@@ -9,8 +9,9 @@ import { useNavigate } from "react-router-dom"
 
 export function DashBoard() {
     const data = usuarios
-    const { user } = useContext(AuthContext)
+    const { user, userAccess } = useContext(AuthContext)
     const navigate = useNavigate()
+    userAccess("administrador")
 
     return(
         <>

@@ -7,8 +7,9 @@ import { AuthContext } from "@/contexts/AuthContext";
 
 export function ListarProgramas(){
     const data = mockProgramas
-    const { user } = useContext(AuthContext)
+    const { user, userAccess } = useContext(AuthContext)
 
+    userAccess("beneficiario")
     return(
         <>
             <NavBar nomeUsuario={user?.nome} />

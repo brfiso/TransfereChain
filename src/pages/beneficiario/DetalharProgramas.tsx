@@ -29,8 +29,10 @@ export function DetalharProgramas(){
 
     const data = mockProgramas.filter(programa => programa.id === id)[0]
     const [modalOpen, setModalOpen] = useState(false)
-    const { user } = useContext(AuthContext)
+    const { user, userAccess } = useContext(AuthContext)
     
+    userAccess("beneficiario")
+
     return(
         <>
             <NavBar nomeUsuario={user?.nome} />
