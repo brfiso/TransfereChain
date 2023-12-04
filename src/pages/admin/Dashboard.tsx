@@ -1,17 +1,37 @@
 import { NavBar } from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
 import { AuthContext } from "@/contexts/AuthContext"
+import { api } from "@/services/api"
 import { columns } from "@/utils/data-tables/DashBoard/columns"
 import { DataTable } from "@/utils/data-tables/DashBoard/data-table"
-import { usuarios } from "@/utils/data/usuarios"
-import { useContext } from "react"
+import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
+async function getUsuarios(){
+    const response = await api.get("users");
+    return response.data
+}
+
+
+
 export function DashBoard() {
-    const data = usuarios
     const { user, userAccess } = useContext(AuthContext)
     const navigate = useNavigate()
+    const [data, setData] = useState([])
     userAccess("administrador")
+
+    useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const usuarios = await getUsuarios();
+            setData(usuarios)
+          } catch (error) {
+            console.error('Erro ao buscar usuários:', error);
+          }
+        };
+      
+        fetchData();
+      }, []);
 
     return(
         <>

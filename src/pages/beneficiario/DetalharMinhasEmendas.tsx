@@ -64,7 +64,6 @@ export function DetalharMinhasEmendas(){
     })
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values)
         navigate(`/programas/detalhar/${programa.id}?savesuccess=true`)
     }
 

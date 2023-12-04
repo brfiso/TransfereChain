@@ -14,7 +14,8 @@ model User {
   id       Int     @id @default(autoincrement())
   nome     String
   cpf      String  @unique
-  wallet   String  @unique
+  wallet   String? @unique
   role     String?
+  cnpj     String?
   password String
 }

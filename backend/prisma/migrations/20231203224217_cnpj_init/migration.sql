@@ -1,9 +1,3 @@
-/*
-  Warnings:
-
-  - You are about to drop the column `role` on the `User` table. All the data in the column will be lost.
-
-*/
 -- RedefineTables
 PRAGMA foreign_keys=OFF;
 CREATE TABLE "new_User" (
@@ -11,13 +5,13 @@ CREATE TABLE "new_User" (
     "nome" TEXT NOT NULL,
     "cpf" TEXT NOT NULL,
     "wallet" TEXT,
-    "roles" TEXT,
+    "role" TEXT,
+    "cnpj" TEXT,
     "password" TEXT NOT NULL
 );
-INSERT INTO "new_User" ("cpf", "id", "nome", "password", "wallet") SELECT "cpf", "id", "nome", "password", "wallet" FROM "User";
+INSERT INTO "new_User" ("cpf", "id", "nome", "password", "role", "wallet") SELECT "cpf", "id", "nome", "password", "role", "wallet" FROM "User";
 DROP TABLE "User";
 ALTER TABLE "new_User" RENAME TO "User";
-CREATE UNIQUE INDEX "User_nome_key" ON "User"("nome");
 CREATE UNIQUE INDEX "User_cpf_key" ON "User"("cpf");
 CREATE UNIQUE INDEX "User_wallet_key" ON "User"("wallet");
 PRAGMA foreign_key_check;

@@ -3,11 +3,12 @@ import { createContext, ReactNode, useState, useContext, useEffect } from "react
 import { parseCookies, setCookie } from 'nookies';
 import axios from "axios";
 
-type User = {
+export type User = {
   cpf: string
   nome: string
   role: string
-  wallet: string
+  wallet?: string
+  cnpj?: string
 }
 
 type SignInCredentials = {
@@ -38,9 +39,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     if(token) {
       api.get('/me').then(response => {
-        const {cpf, nome, role, wallet} = response.data
+        const {cpf, nome, role, wallet, cnpj} = response.data
 
-        setUser({cpf, nome, role, wallet})
+        setUser({cpf, nome, role, wallet, cnpj})
       }).catch( _ =>{
         signOut()
       })
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         password
       });
 
-      const { token, refreshToken, role, nome, wallet } = response.data;
+      const { token, refreshToken, role, nome, wallet, cnpj } = response.data;
 
       setCookie(undefined, "tesouroBtAuth.token", token, {
         maxAge: 60 * 60 * 24 * 30,
@@ -70,7 +71,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         cpf,
         nome,
         role,
-        wallet
+        wallet,
+        cnpj
       });
 
       axios.create({

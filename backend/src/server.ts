@@ -93,7 +93,7 @@ function addUserInformationToRequest(request: Request, response: Response, next:
 
 app.post('/registerUser', async (request, response) => {
   try {
-    const { nome, cpf, role, wallet, password } = request.body;
+    const { nome, cpf, cnpj, role, wallet, password } = request.body;
     const walletExists = await getUserByAddress(wallet);
     const cpfExists = await getUserByCpf(cpf);
 
@@ -117,13 +117,13 @@ app.post('/registerUser', async (request, response) => {
       data: {
         nome,
         cpf,
+        cnpj,
         role,
         wallet,
         password: hashedPassword, 
       },
     });
 
-    console.log(user);
     return response.status(201).json({ success: true, message: 'User created successfully.' });
   } catch (error) {
     console.error('Error in /register endpoint:', error);
@@ -153,6 +153,7 @@ app.post('/sessions', async (request, response) => {
   const { token, refreshToken } = generateJwtAndRefreshToken(cpf, {
     role: user.role,
     nome: user.nome,
+    cnpj: user.cnpj,
     wallet: user.wallet
   })
 
@@ -161,36 +162,30 @@ app.post('/sessions', async (request, response) => {
     refreshToken,
     role: user.role,
     nome: user.nome,
-    wallet: user.wallet
+    wallet: user.wallet,
+    cnpj: user.cnpj
   });
 });
 
 app.get('/users', checkAuthMiddleware, async (request, response) => {
   const users = await prisma.user.findMany()
 
-  const cpf = request.user;
-  const user = await getUserByCpf(cpf);
-
-
-  if(user.role != "administrador"){
-    return response
-    .status(401)
-    .json({ 
-      error: true, 
-      message: 'Você não tem autorização para fazer esta consulta'
-    });
+  try{
+    if (!users) {
+      return response
+        .status(401)
+        .json({ 
+          error: true, 
+          message: 'A consulta deu errado!'
+        });
+    }
+  
+    return response.json(users);
+  }catch(err){
+    console.log(err)
   }
 
-  if (!users) {
-    return response
-      .status(401)
-      .json({ 
-        error: true, 
-        message: 'A consulta deu errado!'
-      });
-  }
 
-  return response.json(users);
 });
 
 app.post('/refresh', addUserInformationToRequest, (request, response) => {
@@ -228,7 +223,8 @@ app.post('/refresh', addUserInformationToRequest, (request, response) => {
     role: user.role,
     cpf: user.nome,
     nome: user.nome,
-    wallet: user.wallet
+    wallet: user.wallet,
+    cnpj: user.cnpj
   })
 
   return response.json({
@@ -236,7 +232,8 @@ app.post('/refresh', addUserInformationToRequest, (request, response) => {
     refreshToken: newRefreshToken,
     role: user.role,
     nome: user.nome,
-    wallet: user.wallet
+    wallet: user.wallet,
+    cpnj: user.cnpj
   });
 });
 
@@ -255,7 +252,8 @@ app.get('/me', checkAuthMiddleware, async (request, response) => {
     cpf,
     nome : user.nome,
     role: user.role,
-    wallet: user.wallet
+    wallet: user.wallet,
+    cnpj: user.cnpj
   })
 });
 

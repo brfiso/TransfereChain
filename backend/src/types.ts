@@ -7,7 +7,8 @@ type UserData = {
   password: string;
   nome: string;
   role: string;
-  wallet: string;
+  wallet?: string;
+  cnpj?: string;
 }
 
 export type UsersStore = Map<string, UserData>

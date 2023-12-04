@@ -36,8 +36,6 @@ export function Criar() {
         return response
     }
 
-    
-
     const { user, userAccess } = useContext(AuthContext)
     const userWallet = useAddress()
     const {contract} = useContract(contractAddress, abi)
@@ -54,7 +52,7 @@ export function Criar() {
         role: z.string({
             required_error: "Cargo é obrigatório"
         }),
-        cnpj: z.string().max(17, {
+        cnpj: z.string().max(18, {
             message: "CNPJ incorreto"
         }),
 		wallet: z.string(),

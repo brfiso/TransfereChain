@@ -3,12 +3,10 @@ CREATE TABLE "User" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "nome" TEXT NOT NULL,
     "cpf" TEXT NOT NULL,
-    "wallet" TEXT,
-    "role" TEXT
+    "wallet" TEXT NOT NULL,
+    "role" TEXT,
+    "password" TEXT NOT NULL
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "User_nome_key" ON "User"("nome");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_cpf_key" ON "User"("cpf");

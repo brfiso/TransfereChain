@@ -12,11 +12,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { List } from "@phosphor-icons/react"
 
-import { Usuario } from "@/utils/data/usuarios"
+import { User } from "@/contexts/AuthContext"
 
-export const columns: ColumnDef<Usuario>[] = [
+export const columns: ColumnDef<User>[] = [
     {
-      accessorKey: "id",
+      accessorKey: "cpf",
       header: ({ column }) => {
           return (
             <Button
@@ -61,7 +61,7 @@ export const columns: ColumnDef<Usuario>[] = [
       },
     },
     {
-      accessorKey: "cnpjBeneficiario",
+      accessorKey: "cnpj",
       header: ({ column }) => {
           return (
             <Button
