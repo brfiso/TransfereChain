@@ -14,7 +14,6 @@ import { List } from "@phosphor-icons/react"
 
 import { User } from "@/contexts/AuthContext"
 import { api } from "@/services/api"
-import { useNavigate } from "react-router-dom"
 
 export const columns: ColumnDef<User>[] = [
     {
