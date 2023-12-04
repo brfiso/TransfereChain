@@ -38,8 +38,8 @@ contract TransfereChain is SwapTwoSteps {
         _;
     }
 
-    constructor(RealTokenizado _realTokenizado, RealDigital _realDigital) SwapTwoSteps(_realDigital) {
-        admin = msg.sender;
+    constructor(RealTokenizado _realTokenizado, RealDigital _realDigital, address _admin) SwapTwoSteps(_realDigital) {
+        admin = _admin;
         realTokenizado = _realTokenizado;
     }
 
@@ -82,6 +82,9 @@ contract TransfereChain is SwapTwoSteps {
     mapping(uint => uint) public periodoDeCarencia; // Período em dias entre o pedido e o saque da 2ª parcela
     mapping(uint id => PedidoDeTransferencia) public pedidoDeTransferencia;
 
+    function atualizaAdmin(address novoAdmin) apenasAdmin external {
+        admin = novoAdmin;
+    }
     function registraParlamentar(uint id, address carteira, string memory nome) apenasAdmin external {
         if (parlamentarPorId[id].id == id 
         || parlamentar[carteira].carteira == carteira) 
@@ -176,10 +179,10 @@ contract TransfereChain is SwapTwoSteps {
             beneficiario: beneficiario[carteiraDoBeneficiario],
             estado: EstadoDaTransferencia.PRIMEIRAPARCELA
         });
-        startSwap(realTokenizado, RealTokenizado(tokenDoBanco), carteiraDoBeneficiario, valor/2);
-        startSwap(realTokenizado, RealTokenizado(tokenDoBanco), carteiraDoBeneficiario, valor/2);
         todosPedidosDeTransferencia.push(pedidoDeTransferencia[autorizacao]);
         periodoDeCarencia[autorizacao] = tempoDeCarencia;
+        startSwap(realTokenizado, RealTokenizado(tokenDoBanco), carteiraDoBeneficiario, valor/2);
+        startSwap(realTokenizado, RealTokenizado(tokenDoBanco), carteiraDoBeneficiario, valor/2);
     }
 
     // Função executada pelo Recebedor
@@ -206,8 +209,8 @@ contract TransfereChain is SwapTwoSteps {
         PedidoDeTransferencia storage pedido = pedidoDeTransferencia[autorizacao];
         if (pedido.estado == EstadoDaTransferencia.SEGUNDAPARCELA 
         || pedido.estado == EstadoDaTransferencia.PRIMEIRAPARCELA) {
-            cancelSwap(pedido.id + 1, motivo);
             pedido.estado = EstadoDaTransferencia.CANCELADA;
+            cancelSwap(pedido.id + 1, motivo);
         }  
         if (pedido.estado == EstadoDaTransferencia.PRIMEIRAPARCELA) {
             cancelSwap(pedido.id, motivo);

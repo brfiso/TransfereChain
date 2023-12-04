@@ -26,7 +26,7 @@ contract SwapTwoSteps {
     struct SwapProposal {
         RealTokenizado tokenSender; // O endereço do contrato de Real Tokenizado do participante pagador.
         RealTokenizado tokenReceiver; // O endereço do contrato de Real Tokenizado do participante recebedor.
-        address sender; // O endereço da wallet do cliente pagador.
+        address author; // O endereço da wallet do autor da requisição.
         address receiver; // O endereço da wallet do cliente recebedor.
         uint256 amount; // Quantidade de Reais a ser movimentada.
         SwapStatus status; // Situação atual da operação.
@@ -45,7 +45,7 @@ contract SwapTwoSteps {
      * @param proposalId uint256: Id da proposta.
      * @param senderNumber uint256: CNPJ8 do pagador
      * @param receiverNumber uint256: CNPJ8 do recebedor
-     * @param sender address: Endereço do pagador
+     * @param author address: Endereço do criador da requisição
      * @param receiver address: Endereço do recebedor
      * @param amount uint256: Valor
      */
@@ -53,7 +53,7 @@ contract SwapTwoSteps {
         uint256 proposalId,
         uint256 senderNumber,
         uint256 receiverNumber,
-        address sender,
+        address author,
         address receiver,
         uint256 amount
     );
@@ -63,7 +63,7 @@ contract SwapTwoSteps {
      * @param proposalId uint256: Id da proposta.
      * @param senderNumber uint256: CNPJ8 do pagador.
      * @param receiverNumber uint256: CNPJ8 do recebedor.
-     * @param sender address: Endereço do pagador.
+     * @param author address: Endereço do autor da requisição.
      * @param receiver address: Endereço do recebedor.
      * @param amount uint256: Valor
      */
@@ -71,7 +71,7 @@ contract SwapTwoSteps {
         uint256 proposalId,
         uint256 senderNumber,
         uint256 receiverNumber,
-        address sender,
+        address author,
         address receiver,
         uint256 amount
     );
@@ -115,7 +115,7 @@ contract SwapTwoSteps {
         swapProposals[proposalCounter] = SwapProposal({
             tokenSender: tokenSender,
             tokenReceiver: tokenReceiver,
-            sender: msg.sender,
+            author: msg.sender,
             receiver: receiver,
             amount: amount,
             status: SwapStatus.PENDING,
@@ -165,7 +165,7 @@ contract SwapTwoSteps {
             proposalId,
             proposal.tokenSender.cnpj8(),
             proposal.tokenReceiver.cnpj8(),
-            proposal.sender,
+            proposal.author,
             proposal.receiver,
             proposal.amount
         );
@@ -180,7 +180,7 @@ contract SwapTwoSteps {
     function cancelSwap(uint256 proposalId, string memory reason) internal {
         SwapProposal storage proposal = swapProposals[proposalId];
         require(
-            msg.sender == proposal.sender || msg.sender == proposal.receiver,
+            msg.sender == proposal.author || msg.sender == proposal.receiver,
             "Only the sender or receiver can cancel the swap."
         );
         require(
