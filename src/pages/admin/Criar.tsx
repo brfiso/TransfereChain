@@ -31,15 +31,10 @@ import { MaskitoOptions } from "@maskito/core"
 import { useMaskito } from "@maskito/react"
 
 export function Criar() {
-    async function getUsuarios(){
-        const response = await api.get("users");
-        return response
-    }
 
     const { user, userAccess } = useContext(AuthContext)
     const userWallet = useAddress()
     const {contract} = useContract(contractAddress, abi)
-
     userAccess("administrador")
 
     const formSchema = z.object({
@@ -86,14 +81,12 @@ export function Criar() {
                 cpf, wallet, nome, cnpj, role, password
             });
 
-            const usuarios = await getUsuarios()
-
-            await contract.registraParlamentar(usuarios.data.length + 1, values.nome, values.wallet)   
+            await contract.call("registraParlamentar", [1, values.wallet, values.nome,])  
 
             window.alert(`Sucesso: Usuário registrado com sucesso`);
 
 		}catch(err: any){
-            window.alert(`Error: ${err.response.data.message}`);
+            window.alert(`Error: ${err}`);
 		}
 	}
 
@@ -270,7 +263,16 @@ export function Criar() {
                                     <div>
                                         {
                                             userWallet ?
-                                                <Button type="submit">Criar usuário</Button>
+                                                <div className="flex items-center space-x-5">
+                                                    <Button type="submit">Criar usuário</Button>
+                                                    <ConnectWallet btnTitle="conectar a carteira" style={{
+                                                        padding: 10,
+                                                        borderRadius: 3,
+                                                        backgroundColor: "hsl(var(--primary) / 0.5)",
+                                                        color: "hsl(var(--primary-foreground))",
+                                                        height: 43
+                                                    }} />
+                                                </div>
                                                 :
                                                 <ConnectWallet btnTitle="conectar a carteira" style={{
                                                     padding: 10,

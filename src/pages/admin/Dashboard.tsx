@@ -7,13 +7,6 @@ import { DataTable } from "@/utils/data-tables/DashBoard/data-table"
 import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-async function getUsuarios(){
-    const response = await api.get("users");
-    return response.data
-}
-
-
-
 export function DashBoard() {
     const { user, userAccess } = useContext(AuthContext)
     const navigate = useNavigate()
@@ -23,15 +16,15 @@ export function DashBoard() {
     useEffect(() => {
         const fetchData = async () => {
           try {
-            const usuarios = await getUsuarios();
-            setData(usuarios)
+            const response = await api.get("users");
+            setData(response.data)
           } catch (error) {
             console.error('Erro ao buscar usuários:', error);
           }
         };
       
         fetchData();
-      }, []);
+    }, []);
 
     return(
         <>

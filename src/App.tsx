@@ -1,7 +1,7 @@
 import { BrowserRouter } from 'react-router-dom'
 import { Router } from './Router'
 import { ThemeProvider } from './components/theme-provider'
-import { ThirdwebProvider, embeddedWallet, localWallet, metamaskWallet } from "@thirdweb-dev/react";
+import { ThirdwebProvider, embeddedWallet, metamaskWallet } from "@thirdweb-dev/react";
 import { Sepolia } from "@thirdweb-dev/chains";
 import { AuthProvider } from "@/contexts/AuthContext"
 
@@ -12,7 +12,6 @@ export function App() {
         <ThirdwebProvider 
            supportedWallets={[
             metamaskWallet(),
-            localWallet(),
             embeddedWallet({
               auth: {
                 options: ["email", "google"],

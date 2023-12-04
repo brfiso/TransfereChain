@@ -13,6 +13,8 @@ import {
 import { List } from "@phosphor-icons/react"
 
 import { User } from "@/contexts/AuthContext"
+import { api } from "@/services/api"
+import { useNavigate } from "react-router-dom"
 
 export const columns: ColumnDef<User>[] = [
     {
@@ -79,7 +81,14 @@ export const columns: ColumnDef<User>[] = [
     id: "actions",
     accessorKey: "ações",
     header: "Ações",
-    cell: ({}) => {
+    cell: ({ row }) => {
+      const navigate = useNavigate()
+
+      async function excluirUsuario(cpf: string){
+          const resultado = await api.post(`deleteUser/${cpf}`);
+          window.alert(resultado.data.message)
+          window.location.reload();
+      }
 
       return (
           <DropdownMenu>
@@ -92,7 +101,7 @@ export const columns: ColumnDef<User>[] = [
           <DropdownMenuContent align="end">
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
               <DropdownMenuSeparator/>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => excluirUsuario(row.original.cpf)}>
                   Remover
               </DropdownMenuItem>
           </DropdownMenuContent>

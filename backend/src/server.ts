@@ -173,9 +173,9 @@ app.post('/Sessions', async (request, response) => {
 });
 
 app.get('/users', checkAuthMiddleware, async (request, response) => {
-  const users = await prisma.user.findMany()
-
   try{
+    const users = await prisma.user.findMany()
+
     if (!users) {
       return response
         .status(401)
@@ -189,9 +189,38 @@ app.get('/users', checkAuthMiddleware, async (request, response) => {
   }catch(err){
     console.log(err)
   }
-
-
 });
+
+app.post('/deleteUser/:userId', checkAuthMiddleware, async (request, response) => {
+  try {
+    const userId = request.params.userId;
+
+    const deleteUser = await prisma.user.delete({
+      where: {
+        cpf: userId,
+      },
+    });
+
+    if (!deleteUser) {
+      return response.status(404).json({
+        error: true,
+        message: 'Usuário não encontrado para exclusão.',
+      });
+    }
+
+    return response.json({
+      success: true,
+      message: 'Usuário excluído com sucesso.',
+    });
+  } catch (err) {
+    console.error(err);
+    return response.status(500).json({
+      error: true,
+      message: 'Erro interno do servidor.',
+    });
+  }
+});
+
 
 app.post('/refresh', addUserInformationToRequest, (request, response) => {
   const cpf = request.user;

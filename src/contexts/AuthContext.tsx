@@ -83,6 +83,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
   
 
+      if(response.data.role === "administrador"){
+        navigateTo("/admin/dashboard")
+      }
+
     } catch (err: any) {
       // window.alert(`Error: ${err.response.data.message}`);
       return err.response.data.message
