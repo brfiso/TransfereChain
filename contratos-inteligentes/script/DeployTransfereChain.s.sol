@@ -7,6 +7,14 @@ import {TransfereChain} from '../src/TransfereChain.sol';
 import {RealTokenizado} from '../src/RealTokenizado.sol';
 import {RealDigital} from '../src/RealDigital.sol';
 
+/*
+Script para criar o contrato na rede Sepólia, habilitá-lo pela autoridade do Real Digital a 
+transacionar, então habilitá-lo pelo administrador do Real Digital a mover Real Digital e imprimir 
+Real Tokenizado de um determinado banco.
+Depois disso o script simula a criação de uma requisição de transferência por parte do parlamentar e
+o aceite da 1ª parcela por parte do recebedor
+*/
+
 contract DeployTransfereChain is Script {
     function run() external returns (TransfereChain) {
         RealDigital realDigital = RealDigital(0x740bc1AFEfc3EF4BBA06aCA16901565af4d9Fa83);
@@ -36,7 +44,7 @@ contract DeployTransfereChain is Script {
         transfereChain.registraBeneficiario(123, contaDoRecebedor, 'Marcelo', 'Pocos de Caldas');
         transfereChain.registraParlamentar(21, carteiraDoParlamentar, 'Tiririca');
         vm.stopBroadcast();
-        vm.startBroadcast(adminKey);
+        vm.startBroadcast(adminKey); //Nesse caso adminKey é a chave privada da carteira do parlamentar
         transfereChain.aprovaTransferencia(1, 1000, address(bancoRecebedor), contaDoRecebedor, 30);
         vm.stopBroadcast();
         uint256 cityKey = vm.envUint('CITY_KEY');
