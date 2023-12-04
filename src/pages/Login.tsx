@@ -34,7 +34,7 @@ export function Login(){
             navigate("/admin/dashboard");
           } else if(user?.role === "parlamentar") {
             navigate("/emendas/listar");
-          } else if(user?.role === "beneficiario") {
+          } else if(user?.role === "beneficiário") {
             navigate("/programas/listar");
           } else {
             navigate("/transferenciasEspeciais/listar");

@@ -82,11 +82,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         },
       });
 
+      console.log(response.data.role)
+
       if(response.data?.role === "administrador") {
         navigateTo("/admin/dashboard");
       } else if(response.data.role === "parlamentar") {
         navigateTo("/emendas/listar");
-      } else if(response.data.role === "beneficiario") {
+      } else if(response.data.role === "beneficiário") {
         navigateTo("/programas/listar");
       } else {
         navigateTo("/transferenciasEspeciais/listar");

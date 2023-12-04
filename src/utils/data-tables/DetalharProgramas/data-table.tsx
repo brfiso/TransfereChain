@@ -32,7 +32,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { usuarios } from "@/utils/data/usuarios"
+import { useContext } from "react"
+import { AuthContext } from "@/contexts/AuthContext"
  
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -47,7 +48,7 @@ export function DataTable<TData, TValue>({
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
-
+    const { user } = useContext(AuthContext)
     
     const table = useReactTable({
         data,
@@ -133,9 +134,8 @@ export function DataTable<TData, TValue>({
         <div className="flex space-x-5">
             <div className="flex space-x-2 mb-5 items-center">
                 <Checkbox id="minhasEmendasCiencia" onCheckedChange={e => {
-                    const usuario = usuarios.filter(usuario => usuario.cnpjBeneficiario)[0]
                     if(e){
-                        table.getColumn("cnpjBeneficiario")?.setFilterValue(usuario.cnpjBeneficiario)
+                        table.getColumn("cnpjBeneficiario")?.setFilterValue(user?.cnpj)
                         table.getColumn("cienciaBeneficiario")?.setFilterValue(true)
                     } else {
                         table.getColumn("cnpjBeneficiario")?.setFilterValue("")
@@ -153,9 +153,8 @@ export function DataTable<TData, TValue>({
             </div>
             <div className="flex space-x-2 mb-5 items-center">
                 <Checkbox id="minhasEmendas" onCheckedChange={e => {
-                    const usuario = usuarios.filter(usuario => usuario.cnpjBeneficiario)[0]
                     if(e){
-                        table.getColumn("cnpjBeneficiario")?.setFilterValue(usuario.cnpjBeneficiario)
+                        table.getColumn("cnpjBeneficiario")?.setFilterValue(user?.cnpj)
                     } else {
                         table.getColumn("cnpjBeneficiario")?.setFilterValue("")
                     }

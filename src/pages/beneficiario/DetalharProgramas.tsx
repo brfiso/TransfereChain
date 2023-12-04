@@ -31,7 +31,7 @@ export function DetalharProgramas(){
     const [modalOpen, setModalOpen] = useState(false)
     const { user, userAccess } = useContext(AuthContext)
     
-    userAccess("beneficiario")
+    userAccess("beneficiário")
 
     return(
         <>

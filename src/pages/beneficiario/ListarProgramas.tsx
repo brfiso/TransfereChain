@@ -9,7 +9,7 @@ export function ListarProgramas(){
     const data = mockProgramas
     const { user, userAccess } = useContext(AuthContext)
 
-    userAccess("beneficiario")
+    userAccess("beneficiário")
     return(
         <>
             <NavBar nomeUsuario={user?.nome} />

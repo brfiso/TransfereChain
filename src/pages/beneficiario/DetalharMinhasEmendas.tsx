@@ -76,7 +76,7 @@ export function DetalharMinhasEmendas(){
     const [valueTipo, setValueTipo] = useState("")
     const { user, userAccess } = useContext(AuthContext)
 
-    userAccess("beneficiario")
+    userAccess("beneficiário")
 
     return(
         <>

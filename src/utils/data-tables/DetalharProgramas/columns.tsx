@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button"
 import { EmendaIndicada } from "@/utils/data/emendas"
 import { beneficiarios } from "@/utils/data/beneficiarios"
 import { Checkbox } from "@/components/ui/checkbox"
-import { usuarios } from "@/utils/data/usuarios"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { List } from "@phosphor-icons/react"
 import { useNavigate } from "react-router-dom"
+import { useContext } from "react"
+import { AuthContext } from "@/contexts/AuthContext"
 
 export const columns: ColumnDef<EmendaIndicada>[] = [
   {
@@ -26,8 +27,10 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
     ),
     cell: ({ row }) => {
       const data = row.original;
-      const usuario = usuarios.filter((usuario) => usuario.id === "000.000.000-02")[0];
-      const usuarioValidado = usuario.cnpjBeneficiario === data.cnpjBeneficiario;
+      const { user } = useContext(AuthContext)
+
+      const usuario = user;
+      const usuarioValidado = usuario?.cnpj === data.cnpjBeneficiario;
   
       return (
         usuarioValidado && !data.cienciaBeneficiario && (
@@ -170,8 +173,9 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
     header: "Ações",
     cell: ({ row }) => {
       const data = row.original;
-      const usuario = usuarios.filter((usuario) => usuario.id === "000.000.000-02")[0];
-      const usuarioValidado = usuario.cnpjBeneficiario === data.cnpjBeneficiario;
+      const { user } = useContext(AuthContext)
+      const usuario = user;
+      const usuarioValidado = usuario?.cnpj === data.cnpjBeneficiario;
       const navigate = useNavigate()
       
       return (
