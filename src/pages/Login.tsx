@@ -18,7 +18,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import type { MaskitoOptions } from '@maskito/core';
 import { useMaskito } from '@maskito/react';
-import { AuthContext } from '@/contexts/AuthContext'
+import { AuthContext, } from '@/contexts/AuthContext'
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -136,7 +136,7 @@ export function Login(){
                             <Separator className="mt-1"/>
                             <div className="flex items-center mt-5">
                                 <Wallet size={26}/>
-                                <button className="ml-1" onClick={() => {}}>Entrar com sua carteira</button>
+                                <span className="ml-2">Entrar com sua carteira</span>
                             </div>
                             <div className="flex items-center mt-5">
                                 <Bank size={26}/>

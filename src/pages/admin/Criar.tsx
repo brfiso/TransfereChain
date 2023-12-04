@@ -81,7 +81,10 @@ export function Criar() {
                 cpf, wallet, nome, cnpj, role, password
             });
 
-            await contract.call("registraParlamentar", [1, values.wallet, values.nome,])  
+            const response = await api.get("users");
+            let uint = response.data.length + 1
+
+            await contract.call("registraParlamentar", [uint, values.wallet, values.nome,])  
 
             window.alert(`Sucesso: Usuário registrado com sucesso`);
 

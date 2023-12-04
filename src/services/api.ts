@@ -1,77 +1,97 @@
-import axios, { AxiosError} from "axios";
-import { destroyCookie, parseCookies, setCookie } from 'nookies'
+import axios, { AxiosError } from "axios";
+import { destroyCookie, parseCookies, setCookie } from 'nookies';
+
+interface FailedRequest {
+  onSuccess: (token: string) => void;
+  onFailure: (error: AxiosError) => void;
+}
 
 let cookies = parseCookies();
 let isRefreshing = false;
-let failedRequestsQueue:any = [];
+let failedRequestsQueue: FailedRequest[] = [];
 
 export const api = axios.create({
-    baseURL: "http://localhost:3333",
-    headers: {
-        Authorization: `Bearer ${cookies['tesouroBtAuth.token']}`
-    }
-})
+  baseURL: "http://localhost:3333",
+  headers: {
+    Authorization: `Bearer ${cookies['tesouroBtAuth.token']}`
+  }
+});
 
-export function signOut(){
-    destroyCookie(undefined, "tesouroBtAuth.token")
-    destroyCookie(undefined, "tesouroBtAuth.refreshToken")
+export function signOut() {
+  destroyCookie(undefined, "tesouroBtAuth.token");
+  destroyCookie(undefined, "tesouroBtAuth.refreshToken");
 
-    window.location.href = "/"; 
+  window.location.href = "/";
 }
 
 api.interceptors.response.use(response => {
-    return response
+  return response;
 }, (error: AxiosError) => {
-    if(error.response?.status === 401){
-        if(error.response.data?.code === 'token.expired'){
-            cookies = parseCookies()
+  if (error.response?.status === 401) {
+    const code = (error.response.data as any)?.code;
+    if (code === 'token.expired') {
+      cookies = parseCookies();
 
-            const{'tesouroBtAuth.refreshToken' : refreshToken} = cookies
-            const originalConfig = error.config
+      const { 'tesouroBtAuth.refreshToken': refreshToken } = cookies;
+      const originalConfig = error.config;
 
-            if(!isRefreshing){
-                api.post('/refresh', {
-                    refreshToken,
-                }).then( response => {
-                    const {token} = response.data;
+      if (!isRefreshing) {
+        isRefreshing = true;
 
-                    setCookie(undefined, "tesouroBtAuth.token", token, {
-                        maxAge: 60 * 60 * 24 * 30,
-                        path: "/"
-                    });
-                
-                    setCookie(undefined, "tesouroBtAuth.refreshToken", response.data.refreshToken, {
-                        maxAge: 60 * 60 * 24 * 30,
-                        path: "/"
-                    });
-    
-                    api.defaults.headers['Authorization'] = `Bearer ${token}`
+        api.post('/refresh', {
+          refreshToken,
+        }).then(response => {
+          const { token } = response.data;
 
-                    failedRequestsQueue.RequestQueue.forEach(request.onSuccess(token))
-                    failedRequestsQueue = []
-                }).catch(err => {
-                    failedRequestsQueue.RequestQueue.forEach(request.onFailure(err))
-                    failedRequestsQueue = []
-                }).finally(() => isRefreshing =  false);
+          setCookie(undefined, "tesouroBtAuth.token", token, {
+            maxAge: 60 * 60 * 24 * 30,
+            path: "/"
+          });
+
+          setCookie(undefined, "tesouroBtAuth.refreshToken", response.data.refreshToken, {
+            maxAge: 60 * 60 * 24 * 30,
+            path: "/"
+          });
+
+          axios.create({
+            baseURL: "http://localhost:3333",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          failedRequestsQueue.forEach(request => request.onSuccess(token));
+          failedRequestsQueue = [];
+        }).catch(err => {
+          failedRequestsQueue.forEach(request => request.onFailure(err));
+          failedRequestsQueue = [];
+        }).finally(() => isRefreshing = false);
+      }
+
+      return new Promise((resolve, reject) => {
+        failedRequestsQueue.push({
+          onSuccess: (token: string) => {
+            if (originalConfig) {
+              if (!originalConfig.headers) {
+                originalConfig.headers = {};
+              }
+              originalConfig.headers['Authorization'] = `Bearer ${token}`;
+              resolve(api(originalConfig));
+            } else {
+              // Trate o caso em que originalConfig é undefined
+              reject(new Error('originalConfig is undefined'));
             }
-
-            return new Promise((resolve, reject) => {
-                failedRequestsQueue.push({
-                    onSuccess: (token: string) => {
-                        originalConfig.headers['Authorization'] = `Bearer ${token}`
-                    
-                        resolve(api(originalConfig))
-                    },
-                    onFailure: (err: AxiosError) => {
-                        reject(err)
-                    }
-                })
-            })
-        } else {
-            destroyCookie(undefined, "tesouroBtAuth.token")
-            destroyCookie(undefined, "tesouroBtAuth.refreshToken")
-        }
+          },
+          onFailure: (err: AxiosError) => {
+            reject(err);
+          }
+        });
+      });
+    } else {
+      destroyCookie(undefined, "tesouroBtAuth.token");
+      destroyCookie(undefined, "tesouroBtAuth.refreshToken");
     }
+  }
 
-    return Promise.reject(error)
-})
+  return Promise.reject(error);
+});

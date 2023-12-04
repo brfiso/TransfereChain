@@ -82,7 +82,6 @@ export const columns: ColumnDef<User>[] = [
     accessorKey: "ações",
     header: "Ações",
     cell: ({ row }) => {
-      const navigate = useNavigate()
 
       async function excluirUsuario(cpf: string){
           const resultado = await api.post(`deleteUser/${cpf}`);
