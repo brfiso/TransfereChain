@@ -19,7 +19,7 @@ contract DeployTransfereChain is Script {
         
         uint256 deployerPrivateKey = vm.envUint('PRIVATE_KEY');
         vm.startBroadcast(deployerPrivateKey);
-        TransfereChain transfereChain = new TransfereChain(contaDoTesouro, realDigital);
+        TransfereChain transfereChain = new TransfereChain(contaDoTesouro, realDigital, msg.sender);
         vm.stopBroadcast();
         uint256 authorityKey = vm.envUint('AUTHORITY_KEY');
         vm.startBroadcast(authorityKey);
@@ -37,7 +37,7 @@ contract DeployTransfereChain is Script {
         transfereChain.registraParlamentar(21, carteiraDoParlamentar, 'Tiririca');
         vm.stopBroadcast();
         vm.startBroadcast(adminKey);
-        transfereChain.aprovaTransferencia(1, 1000, 'Compra de material escolar', address(bancoRecebedor), contaDoRecebedor);
+        transfereChain.aprovaTransferencia(1, 1000, address(bancoRecebedor), contaDoRecebedor, 30);
         vm.stopBroadcast();
         uint256 cityKey = vm.envUint('CITY_KEY');
         vm.startBroadcast(cityKey);
