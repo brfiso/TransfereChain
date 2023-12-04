@@ -9,7 +9,7 @@ https://www.figma.com/file/Nzrse7YqM4n2rCBEbSoOtI/HACKATHON?type=design&node-id=
 Na nossa proposta associamos um mecanismo que percebemos que traria mais controle e transparência para as transferências especiais.
 Utilizamos como referência um trabalho que visou apontar perspectivas e sugestões a serem consideradas na futura regulamentação infraconstitucional da matéria de transferências especiais (Leandro Vieira Rodrigues Barbosa, 2022, Transferências especiais: criação, evolução e dinâmica, Instituto Legislativo Brasileiro):
 
-# Para que o governo tenha maior controle, os repasses deixariam de ser feitos em uma única parcela e passariam a ser feitas em duas etapas, sendo: 
+### Para que o governo tenha maior controle, os repasses deixariam de ser feitos em uma única parcela e passariam a ser feitas em duas etapas, sendo: 
 # a) a primeira parcela de 50% do valor, 30 dias após o entes encaminharem: 
 # I - identificação do objeto a ser executado; 
 # II - justificativa da proposta: 
