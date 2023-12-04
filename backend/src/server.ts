@@ -134,37 +134,42 @@ app.post('/registerUser', async (request, response) => {
   }
 });
 
-app.post('/sessions', async (request, response) => {
-  const { cpf, password } = request.body as CreateSessionDTO;
+app.post('/Sessions', async (request, response) => {
+  try{
+    const { cpf, password } = request.body as CreateSessionDTO;
 
-  const user = await getUserByCpf(cpf);
+    const user = await getUserByCpf(cpf);
 
-  const passwordMatch = await bcrypt.compare(password, user.password);
-
-  if (!user || !passwordMatch) {
-    return response
-      .status(401)
-      .json({ 
-        error: true, 
-        message: 'CPF or password incorrect.'
-      });
+    const passwordMatch = await bcrypt.compare(password, user.password);
+  
+    if (!user || !passwordMatch) {
+      return response.status(401).json({ 
+          error: true, 
+          message: 'CPF ou senha incorretos.'
+        });
+    }
+  
+    const { token, refreshToken } = generateJwtAndRefreshToken(cpf, {
+      role: user.role,
+      nome: user.nome,
+      cnpj: user.cnpj,
+      wallet: user.wallet
+    })
+  
+    return response.json({
+      token,
+      refreshToken,
+      role: user.role,
+      nome: user.nome,
+      wallet: user.wallet,
+      cnpj: user.cnpj
+    });
+  } catch(error){
+    return response.status(500).json({
+      error: true,
+      message: 'CPF ou senha incorretos.'
+    });
   }
-
-  const { token, refreshToken } = generateJwtAndRefreshToken(cpf, {
-    role: user.role,
-    nome: user.nome,
-    cnpj: user.cnpj,
-    wallet: user.wallet
-  })
-
-  return response.json({
-    token,
-    refreshToken,
-    role: user.role,
-    nome: user.nome,
-    wallet: user.wallet,
-    cnpj: user.cnpj
-  });
 });
 
 app.get('/users', checkAuthMiddleware, async (request, response) => {

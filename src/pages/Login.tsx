@@ -19,13 +19,14 @@ import { Separator } from "@/components/ui/separator";
 import type { MaskitoOptions } from '@maskito/core';
 import { useMaskito } from '@maskito/react';
 import { AuthContext } from '@/contexts/AuthContext'
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
 export function Login(){
     const { signIn, isAuthenticated } = useContext(AuthContext)
     const navigate = useNavigate()
+    const [validacaoLogin, setValidacaoLogin] = useState<any>()
 
     if(isAuthenticated){
         const { user } = useContext(AuthContext)
@@ -64,9 +65,12 @@ export function Login(){
 
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
-
-      await signIn(values)
-
+        try{
+            const response = await signIn(values)
+            setValidacaoLogin(response)
+        } catch(err:any){
+            return err
+        }
     }
 
     return(
@@ -85,6 +89,10 @@ export function Login(){
                             <span className="text-xs">Digite seu CPF para criar ou acessar sua conta gov.br</span>
                             <Form {...form}>
                                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 my-5 flex flex-col">
+                                    {
+                                        validacaoLogin &&
+                                        <div className="bg-destructive my-2 p-2 rounded"><span className="text-white text-sm">{validacaoLogin}</span></div>
+                                    }
                                     <FormField
                                         control={form.control}
                                         name="cpf"

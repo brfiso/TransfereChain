@@ -119,7 +119,7 @@ export function Criar() {
                 <div className="flex justify-between items-center">
                     <div className="flex flex-col">
                         <h1 className="text-blue-600 text-2xl font-bold">Novo Usuário</h1>
-                        <span className="">Crie usuários ou emendas para aplicação</span> 
+                        <span className="">Crie usuários para aplicação</span> 
                     </div>
                     <Button variant="outline" onClick={() => navigate("/admin/dashboard")} >Voltar</Button>
                 </div>
@@ -127,7 +127,7 @@ export function Criar() {
                 <Tabs defaultValue="usuarios" className="w-full">
                         <TabsList>
                             <TabsTrigger value="usuarios">Usuário</TabsTrigger>
-                            <TabsTrigger value="emendas">Emenda</TabsTrigger>
+                            {/* <TabsTrigger value="emendas">Emenda</TabsTrigger> */}
                         </TabsList>
                         <TabsContent value="usuarios" className="flex flex-col">
                             <Form {...form}>
@@ -283,8 +283,8 @@ export function Criar() {
                                 </form>
                             </Form>
                         </TabsContent>
-                        <TabsContent value="emendas">
-                        </TabsContent>
+                        {/* <TabsContent value="emendas">
+                        </TabsContent> */}
                     </Tabs>
                 </div>
             </div>

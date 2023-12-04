@@ -81,22 +81,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      console.log(response.data.role)
-
-      if(response.data?.role === "administrador") {
-        navigateTo("/admin/dashboard");
-      } else if(response.data.role === "parlamentar") {
-        navigateTo("/emendas/listar");
-      } else if(response.data.role === "beneficiário") {
-        navigateTo("/programas/listar");
-      } else {
-        navigateTo("/transferenciasEspeciais/listar");
-      }
   
 
-    } catch (err) {
-      console.log(err);
+    } catch (err: any) {
+      // window.alert(`Error: ${err.response.data.message}`);
+      return err.response.data.message
     }
   }
 

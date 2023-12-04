@@ -93,12 +93,6 @@ export const columns: ColumnDef<User>[] = [
               <DropdownMenuLabel>Ações</DropdownMenuLabel>
               <DropdownMenuSeparator/>
               <DropdownMenuItem>
-                  Detalhar
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                  Alterar
-              </DropdownMenuItem>
-              <DropdownMenuItem>
                   Remover
               </DropdownMenuItem>
           </DropdownMenuContent>

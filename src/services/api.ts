@@ -68,7 +68,8 @@ api.interceptors.response.use(response => {
                 })
             })
         } else {
-            signOut()
+            destroyCookie(undefined, "tesouroBtAuth.token")
+            destroyCookie(undefined, "tesouroBtAuth.refreshToken")
         }
     }
 
