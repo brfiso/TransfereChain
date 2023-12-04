@@ -78,7 +78,6 @@ api.interceptors.response.use(response => {
               originalConfig.headers['Authorization'] = `Bearer ${token}`;
               resolve(api(originalConfig));
             } else {
-              // Trate o caso em que originalConfig é undefined
               reject(new Error('originalConfig is undefined'));
             }
           },

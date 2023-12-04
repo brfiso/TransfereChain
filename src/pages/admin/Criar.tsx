@@ -1,8 +1,7 @@
 import { NavBar } from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
 import { AuthContext } from "@/contexts/AuthContext"
-import { useContext } from "react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useContext, useState } from "react"
 import {
     Form,
     FormControl,
@@ -29,13 +28,15 @@ import { useNavigate } from "react-router-dom"
 import { abi, contractAddress } from "@/utils/contrato"
 import { MaskitoOptions } from "@maskito/core"
 import { useMaskito } from "@maskito/react"
+import { beneficiarios } from "@/utils/data/beneficiarios"
+import { LoadingIndicator } from "@/components/loading/loading"
 
 export function Criar() {
-
     const { user, userAccess } = useContext(AuthContext)
     const userWallet = useAddress()
     const {contract} = useContract(contractAddress, abi)
-    userAccess("administrador")
+    userAccess("administrador") 
+    const [isLoading, setIsLoading] = useState(false)
 
     const formSchema = z.object({
         nome: z.string(),
@@ -70,6 +71,7 @@ export function Criar() {
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
 		try{
+            setIsLoading(true);
             let cpf = values.cpf
             let wallet = values.wallet
             let nome = values.nome
@@ -84,17 +86,33 @@ export function Criar() {
             const response = await api.get("users");
             let uint = response.data.length + 1
 
-            await contract.call("registraParlamentar", [uint, values.wallet, values.nome,])  
 
+            if(values.role === "beneficiário"){
+                const beneficiarioRelacionado = beneficiarios.filter(x => x.id === values.cnpj)[0]
+
+                await contract.call("registraBeneficiario", [uint, values.wallet, values.nome, beneficiarioRelacionado.nome])
+            }else if(values.role === "parlamentar"){
+                await contract.call("registraParlamentar", [uint, values.wallet, values.nome,])  
+            } else if (values.role === "administrador") {
+                await contract.call("atualizaAdmin", [values.wallet]) 
+            }
+
+            navigate("/admin/dashboard")
             window.alert(`Sucesso: Usuário registrado com sucesso`);
 
 		}catch(err: any){
             window.alert(`Error: ${err}`);
-		}
+		} finally {
+            setIsLoading(false);
+        }
 	}
 
     const [openRoles, setOpenRoles] = React.useState(false)
     const [valueRoles, setValueRoles] = React.useState("")
+
+    const [openBeneficiarios, setOpenBeneficiarios] = React.useState(false)
+    const [valueBeneficiarios, setValueBeneficiarios] = React.useState("")
+    
     const roles = ["Nenhum","Beneficiário","Administrador","Parlamentar"]
     const navigate = useNavigate()
 
@@ -103,13 +121,9 @@ export function Criar() {
     };
     const cpfRef = useMaskito({options: cpfMask});
 
-    const cnpjMask: MaskitoOptions = {
-        mask: [/\d/,/\d/,".",/\d/,/\d/,/\d/,".",/\d/,/\d/,/\d/,"/",/\d/,/\d/,/\d/,/\d/,"-",/\d/,/\d/]
-    };
-    const cnpjRef = useMaskito({options: cnpjMask});
-
     return(
         <>
+            {isLoading && <LoadingIndicator />}
             <NavBar nomeUsuario={user?.nome} />
             <div className="container space-y-20 mb-20">
                 <div className="flex justify-between items-center">
@@ -119,178 +133,206 @@ export function Criar() {
                     </div>
                     <Button variant="outline" onClick={() => navigate("/admin/dashboard")} >Voltar</Button>
                 </div>
-                <div>
-                <Tabs defaultValue="usuarios" className="w-full">
-                        <TabsList>
-                            <TabsTrigger value="usuarios">Usuário</TabsTrigger>
-                            {/* <TabsTrigger value="emendas">Emenda</TabsTrigger> */}
-                        </TabsList>
-                        <TabsContent value="usuarios" className="flex flex-col">
-                            <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                                    <FormField
-                                        control={form.control}
-                                        name="nome"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Nome</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Nome" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="cpf"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>CPF</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="CPF" {...field} 
-                                                        ref={cpfRef}
-                                                        onInput={(evt) => {
-                                                            form.setValue("cpf", evt.currentTarget.value);}}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-									<FormField
-                                        control={form.control}
-                                        name="wallet"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Endereço da carteira do usuário</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="0xasecdef..." {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="password"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Senha para primeiro acesso</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Senha para primeiro acesso" type="password" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="role"
-                                        render={({}) => (
-                                        <FormItem className="flex flex-col">
-                                            <FormLabel>Cargo</FormLabel>
-                                            <FormControl>
-                                            <Popover open={openRoles} onOpenChange={setOpenRoles}>
-                                                <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    role="combobox"
-                                                    aria-expanded={openRoles}
-                                                    className="w-[200px] justify-between"
+                <div className="flex flex-col">
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            <FormField
+                                control={form.control}
+                                name="nome"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Nome</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Nome" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="cpf"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>CPF</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="CPF" {...field} 
+                                                ref={cpfRef}
+                                                onInput={(evt) => {
+                                                    form.setValue("cpf", evt.currentTarget.value);}}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="wallet"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Endereço da carteira do usuário</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="0xasecdef..." {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="password"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Senha para primeiro acesso</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Senha para primeiro acesso" type="password" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="role"
+                                render={({}) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel>Cargo</FormLabel>
+                                    <FormControl>
+                                    <Popover open={openRoles} onOpenChange={setOpenRoles}>
+                                        <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={openRoles}
+                                            className="w-[200px] justify-between"
+                                        >
+                                            {valueRoles
+                                            ? roles.find((role) => role.toLowerCase() === valueRoles.toLowerCase())
+                                            : "Selecione o cargo"}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[200px] p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Selecione a UF" />
+                                            <CommandEmpty>Nenhum cargo encontrada</CommandEmpty>
+                                            <CommandGroup>
+                                            {roles.map((role) => (
+                                                <CommandItem
+                                                key={role.toLowerCase()}
+                                                value={role.toLowerCase()}
+                                                onSelect={(currentValue) => {
+                                                    setValueRoles(currentValue.toLowerCase() === valueRoles.toLowerCase() ? "" : role)
+                                                    form.setValue("role", currentValue)
+                                                    setOpenRoles(false)
+                                                    if(currentValue.toLowerCase() !== "beneficiário"){
+                                                        form.setValue("cnpj", "")
+                                                    }
+                                                }}
                                                 >
-                                                    {valueRoles
-                                                    ? roles.find((role) => role.toLowerCase() === valueRoles.toLowerCase())
-                                                    : "Selecione o cargo"}
-                                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                                </Button>
-                                                </PopoverTrigger>
-                                                <PopoverContent className="w-[200px] p-0">
-                                                <Command>
-                                                    <CommandInput placeholder="Selecione a UF" />
-                                                    <CommandEmpty>Nenhum cargo encontrada</CommandEmpty>
-                                                    <CommandGroup>
-                                                    {roles.map((role) => (
-                                                        <CommandItem
-                                                        key={role.toLowerCase()}
-                                                        value={role.toLowerCase()}
-                                                        onSelect={(currentValue) => {
-                                                            setValueRoles(currentValue.toLowerCase() === valueRoles.toLowerCase() ? "" : role)
-                                                            form.setValue("role", currentValue)
-                                                            setOpenRoles(false)
-                                                            if(currentValue.toLowerCase() !== "beneficiário"){
-                                                                form.setValue("cnpj", "")
-                                                            }
-                                                        }}
-                                                        >
+                                            <Check
+                                                className={cn(
+                                                    "mr-2 h-4 w-4",
+                                                    valueRoles === role.toLowerCase() ? "opacity-100" : "opacity-0"
+                                                )}
+                                            />
+                                            {role}
+                                            </CommandItem>
+                                            ))}
+                                            </CommandGroup>
+                                        </Command>
+                                        </PopoverContent>
+                                    </Popover>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            {
+                                valueRoles.toLowerCase() === "beneficiário" &&
+                                <FormField
+                                control={form.control}
+                                name="cnpj"
+                                render={({}) => (
+                                    <FormItem className="flex flex-col">
+                                    <FormLabel>Beneficiário Relacionado</FormLabel>
+                                    <FormControl>
+                                        <Popover open={openBeneficiarios} onOpenChange={setOpenBeneficiarios}>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={openBeneficiarios}
+                                            className="w-[300px] justify-between"
+                                            >
+                                            {valueBeneficiarios
+                                                ? beneficiarios.find((beneficiario) => beneficiario.nome.toLowerCase() === valueBeneficiarios.toLowerCase())?.nome
+                                                : "Selecione o beneficiário"}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[300px] p-0">
+                                            <Command>
+                                            <CommandInput placeholder="Selecione o beneficiário" />
+                                            <CommandEmpty>Nenhum beneficiário encontrado</CommandEmpty>
+                                            <CommandGroup>
+                                                {beneficiarios.map((beneficiario) => (
+                                                <CommandItem
+                                                    key={beneficiario.nome.toLowerCase()}
+                                                    value={beneficiario.nome.toLowerCase()}
+                                                    onSelect={(currentValue) => {
+                                                    setValueBeneficiarios(currentValue.toLowerCase() === valueBeneficiarios.toLowerCase() ? "" : currentValue)
+                                                    setOpenBeneficiarios(false)
+                                
+                                                    let beneficiarioAlvo = beneficiarios.filter(beneficiario => beneficiario.nome.toLowerCase() === currentValue.toLowerCase())[0]
+
+                                                    form.setValue("cnpj", beneficiarioAlvo.id)
+                                                    }}
+                                                >
                                                     <Check
-                                                        className={cn(
-                                                            "mr-2 h-4 w-4",
-                                                            valueRoles === role.toLowerCase() ? "opacity-100" : "opacity-0"
-                                                        )}
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        valueBeneficiarios === beneficiario.nome.toLowerCase() ? "opacity-100" : "opacity-0"
+                                                    )}
                                                     />
-                                                    {role}
-                                                    </CommandItem>
-                                                    ))}
-                                                    </CommandGroup>
-                                                </Command>
-                                                </PopoverContent>
-                                            </Popover>
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                        )}
-                                    />
-                                    {
-                                        valueRoles.toLowerCase() === "beneficiário" &&
-                                        <FormField
-                                        control={form.control}
-                                        name="cnpj"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>CNPJ Relacionado</FormLabel>
-                                                <FormControl>
-                                                    <Input 
-                                                        placeholder="CNPJ relacionado"
-                                                        {...field}
-                                                        ref={cnpjRef}
-                                                        onInput={(evt) => {
-                                                            form.setValue("cnpj", evt.currentTarget.value);}}
-                                                     />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    }
-                                    <div>
-                                        {
-                                            userWallet ?
-                                                <div className="flex items-center space-x-5">
-                                                    <Button type="submit">Criar usuário</Button>
-                                                    <ConnectWallet btnTitle="conectar a carteira" style={{
-                                                        padding: 10,
-                                                        borderRadius: 3,
-                                                        backgroundColor: "hsl(var(--primary) / 0.5)",
-                                                        color: "hsl(var(--primary-foreground))",
-                                                        height: 43
-                                                    }} />
-                                                </div>
-                                                :
-                                                <ConnectWallet btnTitle="conectar a carteira" style={{
-                                                    padding: 10,
-                                                    borderRadius: 3,
-                                                    backgroundColor: "hsl(var(--primary) / 0.9)",
-                                                    color: "hsl(var(--primary-foreground))"
-                                                }} />
-                                        }
+                                                    {beneficiario.nome}
+                                                </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                            </Command>
+                                        </PopoverContent>
+                                        </Popover>
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                            }
+                            <div>
+                                {
+                                userWallet ?
+                                    <div className="flex items-center space-x-5">
+                                        <Button type="submit">Criar usuário</Button>
+                                        <ConnectWallet btnTitle="conectar a carteira" style={{
+                                            padding: 10,
+                                            borderRadius: 3,
+                                            backgroundColor: "hsl(var(--primary) / 0.5)",
+                                            color: "hsl(var(--primary-foreground))",
+                                            height: 43
+                                        }} />
                                     </div>
-                                </form>
-                            </Form>
-                        </TabsContent>
-                        {/* <TabsContent value="emendas">
-                        </TabsContent> */}
-                    </Tabs>
+                                    :
+                                    <ConnectWallet btnTitle="conectar a carteira" style={{
+                                        padding: 10,
+                                        borderRadius: 3,
+                                        backgroundColor: "hsl(var(--primary) / 0.9)",
+                                        color: "hsl(var(--primary-foreground))"
+                                    }} />
+                                }
+                            </div>
+                        </form>
+                    </Form>
                 </div>
             </div>
         </>  
