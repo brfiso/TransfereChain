@@ -34,8 +34,8 @@ import React from "react"
 import { beneficiarios } from "@/utils/data/beneficiarios"
 import { ufs } from "@/utils/data/ufs"
 import { Separator } from "@/components/ui/separator"
-import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useNavigate, useParams } from "react-router-dom"
+import { ConnectWallet } from "@thirdweb-dev/react"
 
 export const columns: ColumnDef<EmendaIndicada>[] = [
     {
@@ -723,72 +723,9 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
                 />   
               </div>
               <Separator/>
-              <div>
+              <div className="flex flex-col">
                 <span className="text-lg font-semibold">Meus Dados</span>
-                <ConnectButton.Custom>
-                  {({
-                    account,
-                    chain,
-                    openAccountModal,
-                    openChainModal,
-                    openConnectModal,
-                    authenticationStatus,
-                    mounted,
-                  }) => {
-                    // Note: If your app doesn't use authentication, you
-                    // can remove all 'authenticationStatus' checks
-                    const ready = mounted && authenticationStatus !== 'loading';
-                    const connected =
-                      ready &&
-                      account &&
-                      chain &&
-                      (!authenticationStatus ||
-                        authenticationStatus === 'authenticated');
-
-                    return (
-                      <div
-                        {...(!ready && {
-                          'aria-hidden': true,
-                          'style': {
-                            opacity: 0,
-                            pointerEvents: 'none',
-                            userSelect: 'none',
-                          },
-                        })}
-                      >
-                        {(() => {
-                          if (!connected) {
-                            return (
-                              <Button onClick={openConnectModal} type="button">
-                                Conectar Carteira
-                              </Button>
-                            );
-                          }
-
-                          if (chain.unsupported) {
-                            return (
-                              <Button onClick={openChainModal} type="button">
-                                Network Errada
-                              </Button>
-                            );
-                          }
-
-                          return (
-                            <div style={{ display: 'flex', gap: 12}}>
-
-                              <Button onClick={openAccountModal} type="button">
-                                {account.displayName}
-                                {account.displayBalance
-                                  ? ` (${account.displayBalance})`
-                                  : ''}
-                              </Button>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    );
-                  }}
-                </ConnectButton.Custom>
+                <ConnectWallet btnTitle="Conectar a carteira" style={{color: "hsl(var(--foreground))", background: "hsl(var(--secondary))"}}/>
               </div>
                   <Button type="submit" className="self-end">Continuar</Button>
               </form>
