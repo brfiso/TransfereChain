@@ -18,42 +18,25 @@ import {
 import { Separator } from "@/components/ui/separator";
 import type { MaskitoOptions } from '@maskito/core';
 import { useMaskito } from '@maskito/react';
-import { AuthContext, } from '@/contexts/AuthContext'
-import { useContext, useState } from "react";
+import { useState } from "react";
+import { mockUser } from "@/utils/data/user";
 import { useNavigate } from "react-router-dom";
 
 
 export function Login(){
-    const { signIn, isAuthenticated } = useContext(AuthContext)
     const navigate = useNavigate()
     const [validacaoLogin, setValidacaoLogin] = useState<any>()
-
-    if(isAuthenticated){
-        const { user } = useContext(AuthContext)
-
-        if(user?.role === "administrador") {
-            navigate("/admin/dashboard");
-          } else if(user?.role === "parlamentar") {
-            navigate("/emendas/listar");
-          } else if(user?.role === "beneficiário") {
-            navigate("/programas/listar");
-          } else {
-            navigate("/transferenciasEspeciais/listar");
-          }
-    }
-    
+ 
     const formSchema = z.object({
         cpf: z.string().length(14, {
             message: "O CPF é inválido."
         }),
-        password: z.string(),
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             cpf: "",
-            password: "",
         },
     })
 
@@ -63,12 +46,24 @@ export function Login(){
     const cpfRef = useMaskito({options: cpfMask});
 
 
-
     async function onSubmit(values: z.infer<typeof formSchema>) {
         try{
-            const response = await signIn(values)
-            setValidacaoLogin(response)
-        } catch(err:any){
+            const user = mockUser.filter(x => x.cpf === values.cpf)[0]
+
+            if(!user){
+                setValidacaoLogin("CPF inválido!")
+            }
+
+            if(user.role === "administrador") {
+                navigate("/admin/dashboard");
+                } else if(user?.role === "parlamentar") {
+                navigate("/emendas/listar");
+                } else if(user?.role === "beneficiário") {
+                navigate("/programas/listar");
+                } else {
+                navigate("/transferenciasEspeciais/listar");
+            }
+         } catch(err:any){
             return err
         }
     }
@@ -107,23 +102,6 @@ export function Login(){
                                                         onInput={(evt) => {
                                                             form.setValue("cpf", evt.currentTarget.value);}}
                                                         />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="password"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Senha</FormLabel>
-                                                <FormControl>
-                                                    <Input 
-                                                        placeholder="Digite sua senha" 
-                                                        type="password"
-                                                        {...field}
-                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

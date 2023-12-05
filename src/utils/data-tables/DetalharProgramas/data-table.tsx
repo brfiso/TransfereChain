@@ -32,8 +32,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
-import { useContext } from "react"
-import { AuthContext } from "@/contexts/AuthContext"
+import { mockUser } from "@/utils/data/user"
  
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -48,7 +47,6 @@ export function DataTable<TData, TValue>({
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [rowSelection, setRowSelection] = React.useState({})
-    const { user } = useContext(AuthContext)
     
     const table = useReactTable({
         data,
@@ -70,6 +68,7 @@ export function DataTable<TData, TValue>({
         },
     })
 
+    const user = mockUser.filter(x => x.role === "beneficiário")[0]
     return (
         <div>
             <div className="flex items-center justify-between py-4">
@@ -154,7 +153,7 @@ export function DataTable<TData, TValue>({
             <div className="flex space-x-2 mb-5 items-center">
                 <Checkbox id="minhasEmendas" onCheckedChange={e => {
                     if(e){
-                        table.getColumn("cnpjBeneficiario")?.setFilterValue(user?.cnpj)
+                        table.getColumn("cnpjBeneficiario")?.setFilterValue(user.cnpj)
                     } else {
                         table.getColumn("cnpjBeneficiario")?.setFilterValue("")
                     }

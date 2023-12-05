@@ -9,8 +9,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { List } from "@phosphor-icons/react"
 import { useNavigate } from "react-router-dom"
-import { useContext } from "react"
-import { AuthContext } from "@/contexts/AuthContext"
+import { mockUser } from "@/utils/data/user"
+
+const user = mockUser.filter(x => x.role === "beneficiário")[0]
+
 
 export const columns: ColumnDef<EmendaIndicada>[] = [
   {
@@ -27,7 +29,6 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
     ),
     cell: ({ row }) => {
       const data = row.original;
-      const { user } = useContext(AuthContext)
 
       const usuario = user;
       const usuarioValidado = usuario?.cnpj === data.cnpjBeneficiario;
@@ -173,7 +174,6 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
     header: "Ações",
     cell: ({ row }) => {
       const data = row.original;
-      const { user } = useContext(AuthContext)
       const usuario = user;
       const usuarioValidado = usuario?.cnpj === data.cnpjBeneficiario;
       const navigate = useNavigate()
@@ -189,15 +189,15 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Ações</DropdownMenuLabel>
             <DropdownMenuSeparator/>
-            {usuarioValidado && data.cienciaBeneficiario && (
+            <DropdownMenuItem>Visualizar</DropdownMenuItem>
+            <DropdownMenuSeparator/>
+            {
+            usuarioValidado && data.cienciaBeneficiario && (
               <>
                 <DropdownMenuItem onClick={() => navigate(`/programas/emendas/detalhar/${data.id}`)}>Prestar contas</DropdownMenuItem>
                 <DropdownMenuSeparator/>
               </>
             )}
-            <DropdownMenuItem>
-              Visualizar
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       );

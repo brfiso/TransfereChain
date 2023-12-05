@@ -14,7 +14,7 @@ import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
-import { signOut } from "@/services/api";
+import { useNavigate } from "react-router-dom";
 
 interface Props{
     nomeUsuario ?: string
@@ -27,6 +27,8 @@ export function NavBar({nomeUsuario} : Props) {
         menu === "hidden" ? setMenu("show") : setMenu("hidden")
     }
     
+
+    const navigate = useNavigate()
     return(
         <NavigationMenu className="mb-20 border-b-2">
             <NavigationMenuList className="p-3 w-[100vw] flex">
@@ -94,7 +96,7 @@ export function NavBar({nomeUsuario} : Props) {
                                     <span className="font-normal hover:bg-slate-200 text-sm p-3">Assinar documentos digitalmente</span>
                                     <span className="font-normal hover:bg-slate-200 text-sm p-3">Notificações</span>
                                     <span className="font-normal hover:bg-slate-200 text-sm p-3">Ajuda da conta gov.br</span>
-                                    <Button className="self-end max-w-[150px] bg-secondary-foreground m-3" onClick={() => signOut()}>Sair da conta</Button>
+                                    <Button className="self-end max-w-[150px] bg-secondary-foreground m-3" onClick={() => navigate("/")}>Sair da conta</Button>
                                 </div> 
                             </div>
                         </NavigationMenuItem>

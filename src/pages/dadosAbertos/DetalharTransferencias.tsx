@@ -13,19 +13,19 @@ import { DataTable } from "@/utils/data-tables/DetalharTransferencias/data-table
 import { useParams } from 'react-router-dom';
 import { mockTransferenciasEspeciais } from "@/utils/data/transferenciasEspeciais";
 import { NavBar } from "@/components/NavBar";
-import { useContext } from "react";
-import { AuthContext } from "@/contexts/AuthContext";
+import { mockUser } from "@/utils/data/user";
 
 export function DetalharTransferencias(){
     const navigate = useNavigate()
 
     const { id } = useParams();
     const data = mockTransferenciasEspeciais.filter(transferenciaEspecial => transferenciaEspecial.id === id)[0]
-    const { user } = useContext(AuthContext)
 
+
+    const user = mockUser.filter(x => x.role === "nenhum")[0]
     return(
         <>
-            <NavBar nomeUsuario={user?.nome} />
+            <NavBar nomeUsuario={user.nome} />
             <div className="container space-y-20 mb-20">
                 <div className="flex justify-between items-center">
                     <h1 className="text-blue-600 text-2xl font-bold">Detalhes do Documento</h1>

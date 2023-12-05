@@ -11,9 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { List } from "@phosphor-icons/react"
-
-import { User } from "@/contexts/AuthContext"
-import { api } from "@/services/api"
+import { User } from "@/utils/data/user"
 
 export const columns: ColumnDef<User>[] = [
     {
@@ -83,9 +81,7 @@ export const columns: ColumnDef<User>[] = [
     cell: ({ row }) => {
 
       async function excluirUsuario(cpf: string){
-          const resultado = await api.post(`deleteUser/${cpf}`);
-          window.alert(resultado.data.message)
-          window.location.reload();
+        console.log(cpf)
       }
 
       return (

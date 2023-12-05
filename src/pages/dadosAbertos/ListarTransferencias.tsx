@@ -1,10 +1,10 @@
 import { DataTable } from "@/utils/data-tables/ListarTransferencias/data-table";
 import { columns } from "@/utils/data-tables/ListarTransferencias/columns"
 import { mockTransferenciasEspeciais } from "@/utils/data/transferenciasEspeciais";
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { ufs } from "@/utils/data/ufs";
-import { AuthContext } from "@/contexts/AuthContext";
 import { NavBar } from "@/components/NavBar";
+import { mockUser } from "@/utils/data/user";
 
 const data = mockTransferenciasEspeciais
 
@@ -15,10 +15,11 @@ export function ListarTransferencias(){
         setUfSelecionada(value);
     };
 
-    const { user } = useContext(AuthContext)
+
+    const user = mockUser.filter(x => x.role === "nenhum")[0]
     return(
         <>
-            <NavBar nomeUsuario={user?.nome} />
+            <NavBar nomeUsuario={user.nome} />
             <div className="container space-y-20 mb-20">
                 <h1 className="text-blue-600 text-2xl font-bold">Painel das Transferências Especiais</h1>
                 <div>

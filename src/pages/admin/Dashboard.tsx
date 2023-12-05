@@ -1,34 +1,19 @@
 import { NavBar } from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
-import { AuthContext } from "@/contexts/AuthContext"
-import { api } from "@/services/api"
 import { columns } from "@/utils/data-tables/DashBoard/columns"
 import { DataTable } from "@/utils/data-tables/DashBoard/data-table"
-import { useContext, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { mockUser } from "@/utils/data/user"
 
 export function DashBoard() {
-    const { user, userAccess } = useContext(AuthContext)
     const navigate = useNavigate()
-    const [data, setData] = useState([])
-    userAccess("administrador")
+    const data = mockUser
 
-    useEffect(() => {
-        const fetchData = async () => {
-          try {
-            const response = await api.get("users");
-            setData(response.data)
-          } catch (error) {
-            console.error('Erro ao buscar usuários:', error);
-          }
-        };
-      
-        fetchData();
-    }, []);
+    const user = mockUser.filter(x => x.role === "administrador")[0]
 
     return(
         <>
-            <NavBar nomeUsuario={user?.nome} />
+            <NavBar nomeUsuario={user.nome} />
             <div className="container space-y-20 mb-20">
                 <div className="flex justify-between items-center">
                     <div className="flex flex-col">

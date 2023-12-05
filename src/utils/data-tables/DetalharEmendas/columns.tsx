@@ -21,7 +21,7 @@ import {
 
 import { List } from "@phosphor-icons/react"
 
-import { EmendaIndicada } from "@/utils/data/emendas"
+import { EmendaIndicada, mockEmendas } from "@/utils/data/emendas"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -35,7 +35,10 @@ import { beneficiarios } from "@/utils/data/beneficiarios"
 import { ufs } from "@/utils/data/ufs"
 import { Separator } from "@/components/ui/separator"
 import { useNavigate, useParams } from "react-router-dom"
-import { ConnectWallet } from "@thirdweb-dev/react"
+import { ConnectWallet, useContract } from "@thirdweb-dev/react"
+import { abi, contractAddress } from "@/utils/contrato"
+import { LoadingIndicator } from "@/components/loading/loading"
+import { bancos } from "@/utils/data/banco"
 
 export const columns: ColumnDef<EmendaIndicada>[] = [
     {
@@ -360,7 +363,7 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            beneficiario: "",
+            beneficiario: undefined,
             estado: "",
             valor: 0,
             cnpj: "",
@@ -369,26 +372,40 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
             municipio: "",
             naturezaJuridica: "",
             estabelecimento: "",
-            justificativa: "",
+            justificativa: undefined
         },
     })
     
     const [openBeneficiarios, setOpenBeneficiarios] = React.useState(false)
     const [valueBeneficiarios, setValueBeneficiarios] = React.useState("")
+    const [isLoading, setIsLoading] = React.useState(false)
 
     const [openUfs, setOpenUfs] = React.useState(false)
     const [valueUfs, setValueUfs] = React.useState("")
 
     const [modal, setModal] = React.useState(false)
+    const {contract} = useContract(contractAddress, abi)
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-      setModal(false)
-      console.log(values)
-      return navigate(`/emendas/detalhar/${id}?success=true`)
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+      try{
+        setIsLoading(true)
+        const emendaPai = mockEmendas.filter(x => x.emendasIndicadas.filter(y => y.id === emenda.id)[0] !== undefined)[0]
+        const beneficiarioAlvo = beneficiarios.filter(x => x.id === values.cnpj)[0]
+
+        await contract.call("aprovaTransferencia", [emendaPai.id, values.valor, bancos[0].wallet, beneficiarioAlvo.wallet, 30])
+        return navigate(`/emendas/detalhar/${id}?success=true`)
+      } catch(err){
+        window.alert("Ocorreu um erro ao fazer a transação, certifique-se de estar numa carteira registrada como parlamentar!")
+        err
+      }finally{
+        setModal(false)
+        setIsLoading(false)
+      }
     }
     
       return (
-        <Dialog open={modal}>
+        <>
+          <Dialog open={modal}>
           <DropdownMenu>
           <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
@@ -407,6 +424,7 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
           </DropdownMenuContent>
           </DropdownMenu>
           <DialogContent onClose={() => setModal(false)} className="min-w-[800px]">
+          {isLoading && <LoadingIndicator />}
             <DialogHeader>
               <DialogTitle>Adicionar Beneficiário</DialogTitle>
             </DialogHeader>
@@ -732,6 +750,8 @@ export const columns: ColumnDef<EmendaIndicada>[] = [
             </Form>
           </DialogContent>
         </Dialog>
+        
+        </>
       )
     },
   }

@@ -2,14 +2,12 @@ import { columns } from "@/utils/data-tables/ListarProgramas/columns"
 import { DataTable } from "@/utils/data-tables/ListarProgramas/data-table"
 import { mockProgramas } from "@/utils/data/programas";
 import { NavBar } from "@/components/NavBar";
-import { useContext } from "react";
-import { AuthContext } from "@/contexts/AuthContext";
+import { mockUser } from "@/utils/data/user";
 
 export function ListarProgramas(){
     const data = mockProgramas
-    const { user, userAccess } = useContext(AuthContext)
 
-    userAccess("beneficiário")
+    const user = mockUser.filter(x => x.role === "beneficiário")[0]
     return(
         <>
             <NavBar nomeUsuario={user?.nome} />

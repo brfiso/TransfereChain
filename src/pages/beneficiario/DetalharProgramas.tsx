@@ -14,11 +14,11 @@ import {
     DialogHeader,
     DialogTitle,
   } from "@/components/ui/dialog"
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { NavBar } from "@/components/NavBar";
-import { AuthContext } from "@/contexts/AuthContext";
 import { ConnectWallet } from "@thirdweb-dev/react";
+import { mockUser } from "@/utils/data/user";
 
 export function DetalharProgramas(){
     const navigate = useNavigate()
@@ -29,13 +29,13 @@ export function DetalharProgramas(){
 
     const data = mockProgramas.filter(programa => programa.id === id)[0]
     const [modalOpen, setModalOpen] = useState(false)
-    const { user, userAccess } = useContext(AuthContext)
-    
-    userAccess("beneficiário")
+
+
+    const user = mockUser.filter(x => x.role === "beneficiário")[0]
 
     return(
         <>
-            <NavBar nomeUsuario={user?.nome} />
+            <NavBar nomeUsuario={user.nome} />
                 <div className="container space-y-20 mb-20">
                     <div className="flex flex-col">
                         <h1 className="text-blue-600 text-2xl font-bold">Dados do Programas</h1>

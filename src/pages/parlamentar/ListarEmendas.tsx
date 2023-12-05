@@ -3,14 +3,12 @@ import { columns } from "@/utils/data-tables/ListarEmendas/columns"
 import { DataTable } from "@/utils/data-tables/ListarEmendas/data-table"
 import { mockEmendas } from "@/utils/data/emendas";
 import { NavBar } from "@/components/NavBar";
-import { useContext } from "react";
-import { AuthContext } from "@/contexts/AuthContext";
+import { mockUser } from "@/utils/data/user";
 
 export function ListarEmendas(){
     const data = mockEmendas
 
-    const { user, userAccess } = useContext(AuthContext)
-    userAccess("parlamentar")
+    const user = mockUser.filter(x => x.role === "parlamentar")[0]
     return(
         <>
             <NavBar nomeUsuario={user?.nome} />

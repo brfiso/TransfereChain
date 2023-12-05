@@ -1,7 +1,6 @@
 import { NavBar } from "@/components/NavBar"
 import { Button } from "@/components/ui/button"
-import { AuthContext } from "@/contexts/AuthContext"
-import { useContext, useState } from "react"
+import { useState } from "react"
 import {
     Form,
     FormControl,
@@ -23,19 +22,17 @@ import { cn } from "@/lib/utils"
 import React from "react"
 import { ChevronsUpDown } from "lucide-react"
 import { ConnectWallet, useAddress, useContract } from "@thirdweb-dev/react" 
-import { api } from "@/services/api";
 import { useNavigate } from "react-router-dom"
 import { abi, contractAddress } from "@/utils/contrato"
 import { MaskitoOptions } from "@maskito/core"
 import { useMaskito } from "@maskito/react"
 import { beneficiarios } from "@/utils/data/beneficiarios"
 import { LoadingIndicator } from "@/components/loading/loading"
+import { mockUser } from "@/utils/data/user"
 
 export function Criar() {
-    const { user, userAccess } = useContext(AuthContext)
     const userWallet = useAddress()
     const {contract} = useContract(contractAddress, abi)
-    userAccess("administrador") 
     const [isLoading, setIsLoading] = useState(false)
 
     const formSchema = z.object({
@@ -72,20 +69,8 @@ export function Criar() {
     async function onSubmit(values: z.infer<typeof formSchema>) {
 		try{
             setIsLoading(true);
-            let cpf = values.cpf
-            let wallet = values.wallet
-            let nome = values.nome
-            let cnpj = values.cnpj
-            let role = values.role
-            let password = values.password
 
-			await api.post("registerUser", {
-                cpf, wallet, nome, cnpj, role, password
-            });
-
-            const response = await api.get("users");
-            let uint = response.data.length + 1
-
+            let uint = 0
 
             if(values.role === "beneficiário"){
                 const beneficiarioRelacionado = beneficiarios.filter(x => x.id === values.cnpj)[0]
@@ -121,10 +106,12 @@ export function Criar() {
     };
     const cpfRef = useMaskito({options: cpfMask});
 
+    const user = mockUser.filter(x => x.role === "administrador")[0]
+
     return(
         <>
             {isLoading && <LoadingIndicator />}
-            <NavBar nomeUsuario={user?.nome} />
+            <NavBar nomeUsuario={user.nome} />
             <div className="container space-y-20 mb-20">
                 <div className="flex justify-between items-center">
                     <div className="flex flex-col">
@@ -225,6 +212,9 @@ export function Criar() {
                                                 onSelect={(currentValue) => {
                                                     setValueRoles(currentValue.toLowerCase() === valueRoles.toLowerCase() ? "" : role)
                                                     form.setValue("role", currentValue)
+                                                    if(currentValue.toLowerCase() === "administrador"){
+                                                        window.alert("Caso você registre umm novo usuário, a função de administrador do contrato será passada para a carteira dele, ou seja, sua carteira perderá a função de administrador.")
+                                                    }
                                                     setOpenRoles(false)
                                                     if(currentValue.toLowerCase() !== "beneficiário"){
                                                         form.setValue("cnpj", "")
