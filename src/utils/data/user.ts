@@ -23,8 +23,8 @@ export const mockUser : User[] = [
         cpf: "000.000.000-02",
         nome: "Carlos Santos",
         role: "beneficiário",
-        wallet: "0x789ghi123abc456def",
-        cnpj: "0xd135A4b159b2740644a9B0Cb8d5a29C47351bD37"
+        wallet: "0xd135A4b159b2740644a9B0Cb8d5a29C47351bD37",
+        cnpj: "00.000.000/0001-00"
     },
     {
         cpf: "000.000.000-03",
