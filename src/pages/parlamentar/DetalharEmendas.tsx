@@ -6,6 +6,7 @@ import { DataTable } from "@/utils/data-tables/DetalharEmendas/data-table"
 import { useParams } from 'react-router-dom';
 import { mockEmendas } from "@/utils/data/emendas";
 import { NavBar } from "@/components/NavBar";
+import { mockUser } from "@/utils/data/user";
 
 export function DetalharEmendas(){
     const navigate = useNavigate()
@@ -13,9 +14,11 @@ export function DetalharEmendas(){
     const { id } = useParams();
     const data = mockEmendas.filter(emenda => emenda.id === id)[0]
 
+
+    const user = mockUser.filter(x => x.role === "parlamentar")[0]
     return(
         <>
-            {/* <NavBar nomeUsuario={user?.nome} /> */}
+            <NavBar nomeUsuario={user?.nome} />
             <div className="container space-y-20 mb-20">
                 <div className="flex justify-between items-center">
                     <div>
