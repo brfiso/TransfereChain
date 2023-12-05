@@ -1,4 +1,5 @@
 import imgGoverno from "@/assets/governoImg.png"
+import {UploadTransaction, RetrieveWallet} from "../services/UploadToIPFS.tsx"
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { IdentificationCard, Bank, QrCode, Certificate, CloudArrowUp, Wallet } from "@phosphor-icons/react";
@@ -26,7 +27,7 @@ import { useNavigate } from "react-router-dom";
 export function Login(){
     const navigate = useNavigate()
     const [validacaoLogin, setValidacaoLogin] = useState<any>()
- 
+    
     const formSchema = z.object({
         cpf: z.string().length(14, {
             message: "O CPF é inválido."
@@ -72,7 +73,8 @@ export function Login(){
         <>
             <div className="flex h-[100vh] items-center justify-center">
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 max-h-[800px]">
-                    <div></div>
+                    <div>
+                    </div>
                     <img className="hidden max-h-[500px] lg:col-span-2 lg:block" src={imgGoverno} />
                     <div className="max-h-[800px]">
                         <div className="border h-full p-5">
@@ -110,6 +112,16 @@ export function Login(){
                                     <Button type="submit" className="self-end">Continuar</Button>
                                 </form>
                             </Form>
+                            <UploadTransaction
+                            cpf="043.984.678-08"
+                            nome="José A."
+                            role="Parlamentar"
+                            wallet="0xab9c475dE99c213DB8c9CAaE86478CCEA367f508"
+                            cnpj=""
+                             />
+                             <RetrieveWallet
+                             cpf="043.984.678-08"
+                             />
                             <span className="font-bold"> Outras opções de identificação:</span>
                             <Separator className="mt-1"/>
                             <div className="flex items-center mt-5">
