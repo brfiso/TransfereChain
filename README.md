@@ -31,9 +31,9 @@ b) a segunda parcela dos 50% restante seria realizada após 30 dias da prestaç�
 Associamos a esta proposta o uso do DREX para viabilizar transferências do tesouro nacional facilitando e desburocratizando os processos de repasses.
 
 Construímos a solução demonstrando as ações de quatro perfis e suas ações:
-1) Administrador do sistema
-  a) Cadastrar parlamentares
-  b) Cadastra beneficiários (Estados, Municípios e Distrito Federal)
+1) Administrador do sistema.
+  a) Cadastrar parlamentares.
+  b) Cadastra beneficiários (Estados, Municípios e Distrito Federal).
 2) Perfil parlamentar
   a) Visualiza emendas/programas e os beneficiários de cada programa
   b) Cadastrar novos beneficiários
