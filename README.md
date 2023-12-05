@@ -24,9 +24,9 @@ III - alcance econômico e social;
 IV - metas a serem atingidas; 
 V - etapas ou fases de execução; 
 VI - cronograma de desembolso; e 
-VII - previsão de início e fim da execução do objeto, bem como da conclusão das etapas ou fases programadas. A contar da data estabelecida na LDO. 
+VII - previsão de início e fim da execução do objeto, bem como da conclusão das etapas ou fases programadas. A contar da data estabelecida na Lei de Diretrizes Orçamentárias. 
 
 b) a segunda parcela dos 50% restante seria realizada após 30 dias da prestação de contas parcial da primeira parcela.  
 
-Associamos a esta proposta o uso do DREX para viabilizar transferências do tesouro nacional facilitando e desburocratizando os processos.
+Associamos a esta proposta o uso do DREX para viabilizar transferências do tesouro nacional facilitando e desburocratizando os processos de repasses.
 
