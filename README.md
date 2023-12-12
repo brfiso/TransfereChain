@@ -30,3 +30,23 @@ b) a segunda parcela dos 50% restante seria realizada após 30 dias da prestaç�
 
 Associamos a esta proposta o uso do DREX para viabilizar transferências do tesouro nacional facilitando e desburocratizando os processos de repasses.
 
+Construímos a solução demonstrando as ações de quatro perfis e suas ações:
+1) Perfil Administrador do sistema
+  *  Cadastrar parlamentares
+  *  Cadastra beneficiários (Estados, Municípios e Distrito Federal)
+3) Perfil parlamentar
+  * Visualiza emendas/programas e os beneficiários de cada programa
+  * Cadastrar novos beneficiários
+4) Perfil do beneficiário (Estados, Municípios e Distrito Federal)
+  * Dar ciência nas emendas disponíveis para o beneficiário
+  * Conectar a carteira do beneficiário
+5) Perfil de acesso público a dados de portal da transparência 
+  * Consultar os contratos para verificar todas as transferências especiais efetuadas. Tendo acesso a dados do beneficiário e documentos enviados
+
+### Para acessar o TransfereChain com cada um dos perfis acima, utilizar os CPF de login abaixo:
+## 000.000.000-00 -> admin
+## 000.000.000-01 -> Parlamentar
+## 000.000.000-02 -> Beneficiário
+## 000.000.000-03 -> Portal público de transparência de transferências especiais 
+
+
