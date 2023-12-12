@@ -201,7 +201,7 @@ contract TransfereChain is SwapTwoSteps {
             pedido.estado = EstadoDaTransferencia.SEGUNDAPARCELA;
             executeSwap(pedido.id);
         }    
-        todosPedidosDeTransferencia[pedido.id - 1].estado = pedido.estado;
+        todosPedidosDeTransferencia[pedido.id - 1 == 0 ? 0 : (pedido.id - 1) / 2].estado = pedido.estado;
     }
 
     // Só pode ser chamada pelo pagador ou pelo recebedor

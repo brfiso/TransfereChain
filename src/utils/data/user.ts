@@ -10,7 +10,7 @@ export const mockUser : User[] = [
     {
         cpf: "000.000.000-00",
         nome: "João Silva",
-        role: "administrador",
+        role: "Admin",
         wallet: "0x1F163f845a5541693525E89422A362481D362B7E",
     },
     {

@@ -1,5 +1,5 @@
 import imgGoverno from "@/assets/governoImg.png"
-
+import {UploadTransaction, RetrieveWallet } from "../utils/UploadToIpfs.tsx"
 import { ModeToggle } from "@/components/mode-toggle";
 import { IdentificationCard, Bank, QrCode, Certificate, CloudArrowUp, Wallet } from "@phosphor-icons/react";
 import { Input } from "@/components/ui/input"
@@ -18,25 +18,34 @@ import {
 import { Separator } from "@/components/ui/separator";
 import type { MaskitoOptions } from '@maskito/core';
 import { useMaskito } from '@maskito/react';
-import { useState } from "react";
-import { mockUser } from "@/utils/data/user";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 
 export function Login(){
     const navigate = useNavigate()
     const [validacaoLogin, setValidacaoLogin] = useState<any>()
+
+
+    useEffect(() => {
+        if (validacaoLogin != undefined) {
+            console.log(validacaoLogin)
+
+        }
+        
+    }, [validacaoLogin])
+
+
     
     const formSchema = z.object({
-        cpf: z.string().length(14, {
-            message: "O CPF é inválido."
-        }),
+        cpf: z.string()
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             cpf: "",
+            // password: "",
         },
     })
 
@@ -46,28 +55,29 @@ export function Login(){
     const cpfRef = useMaskito({options: cpfMask});
 
 
+
     async function onSubmit(values: z.infer<typeof formSchema>) {
-        try{
-            const user = mockUser.filter(x => x.cpf === values.cpf)[0]
+        try {
+            let user = await RetrieveWallet(values.cpf)
+            user : User = user[0]
+            
+        if(user?.role === "Admin") {
+            navigate("/admin/dashboard");
+          } else if(user?.role === "parlamentar") {
+            navigate("/emendas/listar");
+          } else if(user?.role === "beneficiário") {
+            navigate("/programas/listar");
+          } else {
+            navigate("/transferenciasEspeciais/listar");
+          }
 
-            if(!user){
-                setValidacaoLogin("CPF inválido!")
-            }
+            // setValidacaoLogin(values.cpf)
 
-            if(user.role === "administrador") {
-                navigate("/admin/dashboard");
-                } else if(user?.role === "parlamentar") {
-                navigate("/emendas/listar");
-                } else if(user?.role === "beneficiário") {
-                navigate("/programas/listar");
-                } else {
-                navigate("/transferenciasEspeciais/listar");
-            }
-         } catch(err:any){
+
+        } catch(err:any){
             return err
         }
     }
-
     return(
         <>
             <div className="flex h-[100vh] items-center justify-center">
@@ -85,10 +95,6 @@ export function Login(){
                             <span className="text-xs">Digite seu CPF para criar ou acessar sua conta gov.br</span>
                             <Form {...form}>
                                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 my-5 flex flex-col">
-                                    {
-                                        validacaoLogin &&
-                                        <div className="bg-destructive my-2 p-2 rounded"><span className="text-white text-sm">{validacaoLogin}</span></div>
-                                    }
                                     <FormField
                                         control={form.control}
                                         name="cpf"
@@ -108,9 +114,33 @@ export function Login(){
                                             </FormItem>
                                         )}
                                     />
+                                    {/* <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Senha</FormLabel>
+                                                <FormControl>
+                                                    <Input 
+                                                        placeholder="Digite sua senha" 
+                                                        type="password"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    /> */}
                                     <Button type="submit" className="self-end">Continuar</Button>
                                 </form>
                             </Form>
+                            <UploadTransaction
+                            cpf="000.000.000-00"
+                            nome="José A."
+                            role="Admin"
+                            wallet="0xA104505CCeddC6aBD75d713A6af5a868CF82337f"
+                            cnpj=""
+                             />
                             <span className="font-bold"> Outras opções de identificação:</span>
                             <Separator className="mt-1"/>
                             <div className="flex items-center mt-5">
